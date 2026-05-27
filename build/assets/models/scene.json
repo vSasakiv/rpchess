@@ -1,0 +1,22 @@
+{
+	"assetfiles": [
+		{"id": "hm", "file": "assets/models/man/uomo.gltf", "format":"GLTF"},
+		{"id": "a1", "file": "assets/models/man/running.gltf", "format":"GLTF"},
+		{"id": "a2", "file": "assets/models/man/idle.gltf", "format":"GLTF"},
+		{"id": "a3", "file": "assets/models/man/pointing.gltf", "format":"GLTF"},
+		{"id": "a4", "file": "assets/models/man/waving.gltf", "format":"GLTF"}
+	],
+	"models": [
+		{"id": "hm0",  "VD": "VDchar",  "model": "Mesh", "node": "Ch01_Body", "meshId": 0, "asset": "hm", "format":"ASSET"},
+		{"id": "hm1",  "VD": "VDchar",  "model": "Mesh", "node": "Ch01_Body", "meshId": 1, "asset": "hm", "format":"ASSET"}
+	],
+	"textures": [
+		{"id": "st",    "texture": "assets/textures/man/Ch01_1001_Diffuse.png",	   "format": "C"}
+	],
+	"instances": [
+		{"technique": "CookTorranceChar", "elements": [
+			{"id": "hm0",  "model": "hm0",   "texture": ["st"]},
+			{"id": "hm1",  "model": "hm1",   "texture": ["st"]}
+		]}
+	]
+}
