@@ -1,0 +1,11 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/cmake_install.cmake",
+		"/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glfw-build/cmake_install.cmake",
+		"/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glfw-build/src/cmake_install.cmake",
+		"/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-build/cmake_install.cmake",
+		"/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-build/glm/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

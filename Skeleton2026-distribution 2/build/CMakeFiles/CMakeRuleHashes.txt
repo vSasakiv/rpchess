@@ -1,0 +1,15 @@
+# Hashes of file build rules.
+a23d64146d435cd22f0f8a39b4a7de35 CMakeFiles/shaders
+15f1bb9cb3a2b9580cb19a4d8473b554 _deps/glfw-build/src/CMakeFiles/update_mappings
+99d229f4084abf303811b3458a96b1fd shader_copy_stamps/framework/ColliderShow.frag.stamp
+0466677a5a85ec10a80bf741fd8ffd5a shader_copy_stamps/framework/ColliderShow.vert.stamp
+51d62b0adaa99956b0fd88b9d4e252f9 shader_copy_stamps/framework/Text.frag.stamp
+e9adb90d3260bafd821687c9536326de shader_copy_stamps/framework/Text.vert.stamp
+90c158fc858c4563322b9adbb45d8e76 shader_copy_stamps/toChangeBlinnFromPos.frag.stamp
+b83d64e25b0543a616a066dc73448362 shader_copy_stamps/toChangeSimplePos.vert.stamp
+afdeabb1c71896a9ff6d5ea0b644748d spv/framework/ColliderShow.frag.spv
+f2116b53124420e90fc75c57f63cb9fc spv/framework/ColliderShow.vert.spv
+8e2d98478b0804912310db3d39cf4824 spv/framework/Text.frag.spv
+630412054848154ce7741cf8f480b4ac spv/framework/Text.vert.spv
+c2afadb2e1b8840cc354a78452d9f75a spv/toChangeBlinnFromPos.frag.spv
+df96623df476285fa31a0d6b51c052a7 spv/toChangeSimplePos.vert.spv
