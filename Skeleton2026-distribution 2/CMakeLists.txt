@@ -5,9 +5,9 @@ project(SkeletonToChange LANGUAGES CXX)
 # --------------------
 # Project layout
 # --------------------
-set(MAIN_DIR source)
-set(SRC_DIR ${MAIN_DIR}/src)
-set(INCLUDE_DIR ${MAIN_DIR}/include)
+set(MAIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source")
+set(SRC_DIR "${MAIN_DIR}/src")
+set(INCLUDE_DIR "${MAIN_DIR}/include")
 
 file(GLOB SRC_FILES CONFIGURE_DEPENDS "${SRC_DIR}/*.cpp")
 
@@ -51,12 +51,16 @@ FetchContent_Declare(
 set(GLM_ENABLE_CXX_20 ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glm)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw glm::glm)
-
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw glm::glm Vulkan::Vulkan)
+target_include_directories(${PROJECT_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/source/include"
+        "${CMAKE_BINARY_DIR}/_deps/glm-src"
+        "${CMAKE_BINARY_DIR}/_deps/glfw-src/include"
+)
 # --------------------
 # Shader compilation (glslc)
 # --------------------
-set(SHADER_SRC_DIR "source/shaders")
+set(SHADER_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/source/shaders")
 set(SHADER_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/spv")
 set(SHADER_OUT_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders")
 file(GLOB_RECURSE SHADERS CONFIGURE_DEPENDS

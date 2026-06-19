@@ -2,13 +2,18 @@
 
 // This has been adapted from the Vulkan tutorial
 #include <sstream>
+#include <iostream>
 
-#include <json.hpp>
+#include "../include/json.hpp"
+#include "../include/modules/Starter.hpp"
+#include "../include/modules/TextMaker.hpp"
+#include "../include/modules/Scene.hpp"
 
-#include "modules/Starter.hpp"
-#include "modules/TextMaker.hpp"
-#include "modules/Scene.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 // The uniform buffer object used in this example
 struct UniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
@@ -31,7 +36,7 @@ struct Vertex {
 class Skeleton26ReplaceName : public BaseProject {
 	protected:
 	// Here you list all the Vulkan objects you need:
-	
+
 	// Descriptor Layouts [what will be passed to the shaders]
 	DescriptorSetLayout DSLlocal, DSLglobal;
 
@@ -50,13 +55,13 @@ class Skeleton26ReplaceName : public BaseProject {
 
 	// to provide textual feedback
 	TextMaker txt;
-	
+
 	// Other application parameters
 	float Ar;	// Aspect ratio
 
 	glm::mat4 ViewPrj;
 	glm::mat4 View;
-	
+
 	// Here you set the main application parameters
 	void setWindowParameters() {
 		// window size, titile and initial background
@@ -64,11 +69,11 @@ class Skeleton26ReplaceName : public BaseProject {
 		windowHeight = 600;
 		windowTitle = "Skeleton: place the name of your app here";
     	windowResizable = GLFW_TRUE;
-		
+
 		// Initial aspect ratio
 		Ar = 4.0f / 3.0f;
 	}
-	
+
 	// What to do when the window changes size
 	void onWindowResize(int w, int h) {
 		std::cout << "Window resized to: " << w << " x " << h << "\n";
@@ -76,11 +81,11 @@ class Skeleton26ReplaceName : public BaseProject {
 		// Update Render Pass
 		RP.width = w;
 		RP.height = h;
-		
+
 		// updates the textual output
 		txt.resizeScreen(w, h);
 	}
-	
+
 	// Here you load and setup all your Vulkan Models and Texutures.
 	// Here you also create your Descriptor set layouts and load the shaders for the pipelines
 	void localInit() {
@@ -117,7 +122,7 @@ class Skeleton26ReplaceName : public BaseProject {
 		// Pipelines [Shader couples]
 		// The last array, is a vector of pointer to the layouts of the sets that will
 		// be used in this pipeline. The first element will be set 0, and so on..
-		
+
 		P.init(this, &VD, "shaders/toChangeSimplePos.vert.spv",
 						  "shaders/toChangeBlinnFromPos.frag.spv",
 						  {&DSLglobal, &DSLlocal});
@@ -158,17 +163,17 @@ class Skeleton26ReplaceName : public BaseProject {
 		txt.print(1.0f, 1.0f, "FPS:",1,"CO",false,false,true,TAL_RIGHT,TRH_RIGHT,TRV_BOTTOM,{1.0f,0.0f,0.0f,1.0f},{0.8f,0.8f,0.0f,1.0f});
 
 	}
-	
+
 	// Here you create your pipelines and Descriptor Sets!
 	void pipelinesAndDescriptorSetsInit() {
 		// creates the render passes
 		RP.create();
-		
+
 		// This creates a new pipeline (with the current surface), using its shaders for the provided render pass
 		P.create(&RP);
-		
+
 		DSglobal.init(this, &DSLglobal, {});
-		
+
 		// Here you define the data set
 		// If the scene has textures coming from a render pass, the corresponding element of the technique must be
 		// updated before calling SC.pipelinesAndDescriptorSetsInit();
@@ -182,9 +187,9 @@ class Skeleton26ReplaceName : public BaseProject {
 		P.cleanup();
 
 		RP.cleanup();
-		
+
 		DSglobal.cleanup();
-		
+
 		SC.pipelinesAndDescriptorSetsCleanup();
 		txt.pipelinesAndDescriptorSetsCleanup();
 	}
@@ -202,7 +207,7 @@ class Skeleton26ReplaceName : public BaseProject {
 		SC.localCleanup();
 		txt.localCleanup();
 	}
-	
+
 	// Here it is the creation of the command buffer:
 	// You send to the GPU all the objects you want to draw,
 	// with their buffers and textures
@@ -214,7 +219,7 @@ class Skeleton26ReplaceName : public BaseProject {
 	}
 
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
-		
+
 		// Offscreen pass - always required
 		// begin standard pass
 		RP.begin(commandBuffer, currentImage);
@@ -237,12 +242,12 @@ class Skeleton26ReplaceName : public BaseProject {
 
 		// moves the view
 		float deltaT = GameLogic();
-		
+
 		// defines the global parameters for the uniform
 		static float lightRotationAngle = 0.0f; // Static variable to keep track of rotation
 		lightRotationAngle += -0.5f * deltaT; // Increment rotation angle based on time
 
-		const glm::mat4 lightView = glm::rotate(glm::mat4(1), glm::radians(lightRotationAngle), glm::vec3(0.0f, 1.0f, 0.0f)) * 
+		const glm::mat4 lightView = glm::rotate(glm::mat4(1), glm::radians(lightRotationAngle), glm::vec3(0.0f, 1.0f, 0.0f)) *
 									glm::rotate(glm::mat4(1), glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		const glm::vec3 lightDir =  glm::vec3(lightView * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
 
@@ -255,40 +260,40 @@ class Skeleton26ReplaceName : public BaseProject {
 		DSglobal.map(currentImage, &gubo, 0);
 
 		// defines the local parameters for the uniforms
-		UniformBufferObject ubo{};		
+		UniformBufferObject ubo{};
 
 		int instanceId;
 		// character
 		for(instanceId = 0; instanceId < SC.TI[0].InstanceCount; instanceId++) {
 			ubo.mMat = SC.TI[0].I[instanceId].Wm;
 			ubo.mvpMat = ViewPrj * ubo.mMat;
-			
+
 			// DS[1] = Pchar pass (main render): set0=DSLglobal, set1=DSLlocal
 			SC.TI[0].I[instanceId].DS[0][0]->map(currentImage, &gubo, 0); // global (light/camera)
 			SC.TI[0].I[instanceId].DS[0][1]->map(currentImage, &ubo, 0); // camera MVPs
 		}
-		
+
 		// updates the FPS
 		static float elapsedT = 0.0f;
 		static int countedFrames = 0;
-		
+
 		countedFrames++;
 		elapsedT += deltaT;
 		if(elapsedT > 1.0f) {
 			float Fps = (float)countedFrames / elapsedT;
-			
+
 			std::ostringstream oss;
 			oss << "FPS: " << Fps << "\n";
 
 			txt.print(1.0f, 1.0f, oss.str(), 1, "CO", false, false, true,TAL_RIGHT,TRH_RIGHT,TRV_BOTTOM,{1.0f,0.0f,0.0f,1.0f},{0.8f,0.8f,0.0f,1.0f});
-			
+
 			elapsedT = 0.0f;
 		    countedFrames = 0;
 		}
-		
+
 		txt.updateCommandBuffer();
 	}
-	
+
 	float GameLogic() {
 		// Camera FOV-y, Near Plane and Far Plane
 		const float FOVy = glm::radians(45.0f);
