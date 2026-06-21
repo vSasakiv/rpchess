@@ -2,7 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Skeleton2026-distribution 2/build/_deps/glfw-src" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Skeleton2026-distribution 2/build/_deps/glm-src" vcs="Git" />
   </component>
 </project>

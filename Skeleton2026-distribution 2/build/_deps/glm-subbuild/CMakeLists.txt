@@ -18,18 +18,18 @@ project(glm-populate NONE)
 
 # Pass through things we've already detected in the main project to avoid
 # paying the cost of redetecting them again in ExternalProject_Add()
-set(GIT_EXECUTABLE [==[/usr/bin/git]==])
-set(Git_VERSION [==[2.39.5 (Apple Git-154)]==])
+set(GIT_EXECUTABLE [==[C:/Program Files/Git/cmd/git.exe]==])
+set(Git_VERSION [==[2.42.0.windows.1]==])
 set_property(GLOBAL PROPERTY _CMAKE_FindGit_GIT_EXECUTABLE_VERSION
-  [==[/usr/bin/git;2.39.5 (Apple Git-154)]==]
+  [==[C:/Program Files/Git/cmd/git.exe;2.42.0.windows.1]==]
 )
 
 
 include(ExternalProject)
 ExternalProject_Add(glm-populate
                      "UPDATE_DISCONNECTED" "False" "GIT_REPOSITORY" "https://github.com/g-truc/glm.git" "EXTERNALPROJECT_INTERNAL_ARGUMENT_SEPARATOR" "GIT_TAG" "1.0.1"
-                    SOURCE_DIR          "/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-src"
-                    BINARY_DIR          "/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-build"
+                    SOURCE_DIR          "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-src"
+                    BINARY_DIR          "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-build"
                     CONFIGURE_COMMAND   ""
                     BUILD_COMMAND       ""
                     INSTALL_COMMAND     ""

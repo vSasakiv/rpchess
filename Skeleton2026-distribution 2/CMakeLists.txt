@@ -12,7 +12,8 @@ set(INCLUDE_DIR "${MAIN_DIR}/include")
 file(GLOB SRC_FILES CONFIGURE_DEPENDS "${SRC_DIR}/*.cpp")
 
 
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+add_executable(${PROJECT_NAME} ${SRC_FILES}
+        source/src/main.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE "${INCLUDE_DIR}")
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 

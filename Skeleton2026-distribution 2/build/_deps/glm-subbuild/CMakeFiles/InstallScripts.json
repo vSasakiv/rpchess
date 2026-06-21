@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/Users/lukasbjork/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-subbuild/cmake_install.cmake"
+		"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glm-subbuild/cmake_install.cmake"
 	],
 	"Parallel" : false
 }
