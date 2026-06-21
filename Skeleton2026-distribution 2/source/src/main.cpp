@@ -63,6 +63,25 @@ protected:
     float cameraRotationSpeed = 1.5f;
     float cameraZoomSpeed = 4.0f;
 
+    // -------------------------------
+    // Grid and token state
+    // -------------------------------
+
+    static constexpr int GRID_ROWS = 8;
+    static constexpr int GRID_COLS = 8;
+    static constexpr float CELL_SIZE = 0.75f;
+
+    // In scene.json, player_token is the third instance:
+    // 0 = table_surface
+    // 1 = game_board
+    // 2 = player_token
+    static constexpr int TOKEN_INSTANCE_INDEX = 2;
+
+    int tokenRow = 6;
+    int tokenCol = 1;
+
+    float moveCooldown = 0.0f;
+
     void setWindowParameters() {
         windowWidth = 1280;
         windowHeight = 720;
@@ -122,9 +141,9 @@ protected:
                {&DSLglobal, &DSLlocal});
 
         // Descriptor pool size
-        DPSZs.uniformBlocksInPool = 2;
-        DPSZs.texturesInPool = 1;
-        DPSZs.setsInPool = 2;
+        DPSZs.uniformBlocksInPool = 30;
+        DPSZs.texturesInPool = 30;
+        DPSZs.setsInPool = 30;
 
         // Scene support
         VDRs.resize(1);
@@ -221,6 +240,7 @@ protected:
         }
 
         float deltaT = GameLogic();
+        updateTokenInstance();
 
         // Rotating directional light
         static float lightRotationAngle = 0.0f;
@@ -301,6 +321,33 @@ protected:
 
     getSixAxis(deltaT, m, r, fire);
 
+    // -------------------------------
+    // PLAYER MOVEMENT
+    // -------------------------------
+
+        moveCooldown -= deltaT;
+
+        if (moveCooldown <= 0.0f) {
+            if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
+                tryMoveToken(-1, 0);
+                moveCooldown = 0.18f;
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+                tryMoveToken(1, 0);
+                moveCooldown = 0.18f;
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+                tryMoveToken(0, -1);
+                moveCooldown = 0.18f;
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+                tryMoveToken(0, 1);
+                moveCooldown = 0.18f;
+            }
+        }
 
     // -------------------------------
     // ORBIT CAMERA INPUT
@@ -408,6 +455,67 @@ protected:
         }
     return deltaT;
 }
+    //turns the board cells into a 3D position
+    glm::vec3 gridToWorld(int row, int col) const {
+        float x = (static_cast<float>(col) - (GRID_COLS - 1) * 0.5f) * CELL_SIZE;
+        float z = (static_cast<float>(row) - (GRID_ROWS - 1) * 0.5f) * CELL_SIZE;
+
+        return glm::vec3(x, 0.08f, z);
+    }
+    //check to see if it is inside the board
+    bool isInsideBoard(int row, int col) const {
+        return row >= 0 && row < GRID_ROWS &&
+               col >= 0 && col < GRID_COLS;
+    }
+    //check to see if a cell is blocked, now only example for (2,3) and (4,5)
+    bool isBlocked(int row, int col) const {
+        return (row == 2 && col == 3) ||
+               (row == 4 && col == 5);
+    }
+
+
+    void tryMoveToken(int dRow, int dCol) {
+        int newRow = tokenRow + dRow;
+        int newCol = tokenCol + dCol;
+
+        if (!isInsideBoard(newRow, newCol)) {
+            std::cout << "Blocked: outside board\n";
+            return;
+        }
+
+        if (isBlocked(newRow, newCol)) {
+            std::cout << "Blocked: obstacle at cell ("
+                      << newRow << ", " << newCol << ")\n";
+            return;
+        }
+
+        tokenRow = newRow;
+        tokenCol = newCol;
+
+        std::cout << "Token moved to cell ("
+                  << tokenRow << ", " << tokenCol << ")\n";
+    }
+
+    //from object-local coordinates to world coordinates
+    glm::mat4 tokenModelMatrix() const {
+        glm::vec3 pos = gridToWorld(tokenRow, tokenCol);
+
+        return glm::translate(glm::mat4(1.0f), pos) *
+               glm::scale(glm::mat4(1.0f), glm::vec3(0.28f, 1.0f, 0.28f));
+    }
+
+    //Game-state objkect to the rendered scene instance
+    void updateTokenInstance() {
+        if (SC.TI == nullptr) {
+            return;
+        }
+
+        if (SC.TI[0].InstanceCount <= TOKEN_INSTANCE_INDEX) {
+            return;
+        }
+
+        SC.TI[0].I[TOKEN_INSTANCE_INDEX].Wm = tokenModelMatrix();
+    }
 };
 
 int main() {
