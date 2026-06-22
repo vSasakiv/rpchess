@@ -56,6 +56,7 @@ endif()
 # SHADERS at CMakeLists.txt:67 (file)
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/*.frag")
 set(OLD_GLOB
+  "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/Arena.frag"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/ColliderShow.frag"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/Text.frag"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/toChangeBlinnFromPos.frag"
@@ -84,6 +85,7 @@ endif()
 # SHADERS at CMakeLists.txt:67 (file)
 file(GLOB_RECURSE NEW_GLOB LIST_DIRECTORIES false "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/*.vert")
 set(OLD_GLOB
+  "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/Arena.vert"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/ColliderShow.vert"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/Text.vert"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/toChangeSimplePos.vert"

@@ -3,11 +3,15 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <random>
+#include <cmath>
 
 #include "../include/json.hpp"
 #include "../include/modules/Starter.hpp"
 #include "../include/modules/TextMaker.hpp"
 #include "../include/modules/Scene.hpp"
+
+
 
 // Uniform buffer for each rendered object
 struct UniformBufferObject {
@@ -23,11 +27,12 @@ struct GlobalUniformBufferObject {
 };
 
 // Vertex format used by the models
+//Added the ones form the own shaders
 struct Vertex {
     glm::vec3 pos;
+    glm::vec3 norm;
     glm::vec2 UV;
 };
-
 class TabletopDiceRPGArena : public BaseProject {
 protected:
     // Descriptor layouts
@@ -118,14 +123,17 @@ protected:
              sizeof(GlobalUniformBufferObject), 1}
         });
 
-        // Vertex descriptor: position + UV
+        // Vertex descriptor: position + UV, now also normal
         VD.init(this, {
             {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX}
         }, {
             {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos),
              sizeof(glm::vec3), POSITION},
 
-            {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, UV),
+            {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, norm),
+             sizeof(glm::vec3), NORMAL},
+
+            {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, UV),
              sizeof(glm::vec2), UV}
         });
 
@@ -133,11 +141,11 @@ protected:
         RP.init(this);
         RP.properties[0].clearValue = {0.0f, 0.9f, 1.0f, 1.0f};
 
-        // Pipeline
+        // New Pipeline
         P.init(this,
                &VD,
-               "shaders/toChangeSimplePos.vert.spv",
-               "shaders/toChangeBlinnFromPos.frag.spv",
+               "shaders/Arena.vert.spv",
+               "shaders/Arena.frag.spv",
                {&DSLglobal, &DSLlocal});
 
         // Descriptor pool size
@@ -286,6 +294,16 @@ protected:
 
             std::ostringstream oss;
             oss << "FPS: " << fps << "\n";
+            oss << "Dice: " << die1Value << " + " << die2Value << "\n";
+            oss << "Move points: " << movementPoints << "\n";
+
+            if (diceRolling) {
+                oss << "Rolling...\n";
+            } else {
+                oss << "SPACE: roll dice\n";
+            }
+
+            oss << "I/J/K/L: move token\n";
 
             txt.print(
                 1.0f, 1.0f,
@@ -305,6 +323,69 @@ protected:
         }
 
         txt.updateCommandBuffer();
+    }
+
+
+    // -------------------------------
+    // Dice and movement-point state
+    // -------------------------------
+
+    static constexpr int DICE_MIN = 1;
+    static constexpr int DICE_MAX = 6;
+
+    int die1Value = 1;
+    int die2Value = 1;
+
+    int movementPoints = 0;
+
+    bool diceRolling = false;
+    float diceRollTimer = 0.0f;
+    float diceRollDuration = 1.0f;
+
+    float rollCooldown = 0.0f;
+
+    std::mt19937 randomEngine{std::random_device{}()};
+    std::uniform_int_distribution<int> diceDistribution{DICE_MIN, DICE_MAX};
+
+    void startDiceRoll() {
+        if (diceRolling) {
+            return;
+        }
+
+        diceRolling = true;
+        diceRollTimer = 0.0f;
+
+        std::cout << "Rolling dice...\n";
+    }
+
+    void updateDice(float deltaT) {
+        if (!diceRolling) {
+            return;
+        }
+
+        diceRollTimer += deltaT;
+
+        // While the dice are rolling, change the values rapidly.
+        // This gives visible/logical feedback that the roll is active.
+        die1Value = diceDistribution(randomEngine);
+        die2Value = diceDistribution(randomEngine);
+
+        if (diceRollTimer >= diceRollDuration) {
+            diceRolling = false;
+
+            // Final dice values
+            die1Value = diceDistribution(randomEngine);
+            die2Value = diceDistribution(randomEngine);
+
+            // Dice total becomes the movement budget
+            movementPoints = die1Value + die2Value;
+
+            std::cout
+                << "Dice result: "
+                << die1Value << " + " << die2Value
+                << " = " << movementPoints
+                << " movement points\n";
+        }
     }
 
    float GameLogic() {
@@ -348,7 +429,17 @@ protected:
                 moveCooldown = 0.18f;
             }
         }
+        rollCooldown -= deltaT;
 
+        if (rollCooldown <= 0.0f &&
+            glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            startDiceRoll();
+            rollCooldown = 0.4f;
+            }
+
+
+
+        updateDice(deltaT);
     // -------------------------------
     // ORBIT CAMERA INPUT
     // -------------------------------
@@ -379,8 +470,6 @@ protected:
     }
 
 
-
-
     // Avoid flipping the camera upside down
     cameraPitch = std::clamp(
         cameraPitch,
@@ -399,15 +488,15 @@ protected:
 
     cameraPosition.x =
         cameraTarget.x +
-        cameraDistance * cos(cameraPitch) * sin(cameraYaw);
+        cameraDistance * std::cos(cameraPitch) * std::sin(cameraYaw);
 
     cameraPosition.y =
         cameraTarget.y +
-        cameraDistance * sin(cameraPitch);
+        cameraDistance * std::sin(cameraPitch);
 
     cameraPosition.z =
         cameraTarget.z +
-        cameraDistance * cos(cameraPitch) * cos(cameraYaw);
+        cameraDistance * std::cos(cameraPitch) * std::cos(cameraYaw);
 
     // -------------------------------
     // PROJECTION MATRIX
@@ -433,26 +522,6 @@ protected:
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
-
-
-    // Final camera matrix used by the shader
-    ViewPrj = Prj * View;
-
-        if (
-        glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS ||
-        glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS ||
-        glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS ||
-        glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS ||
-        glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
-        glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS
-        )
-        {
-            std::cout
-            << "Yaw: " << glm::degrees(cameraYaw)
-            << " Pitch: " << glm::degrees(cameraPitch)
-            << " Distance: " << cameraDistance
-            << std::endl;
-        }
     return deltaT;
 }
     //turns the board cells into a 3D position
@@ -475,6 +544,11 @@ protected:
 
 
     void tryMoveToken(int dRow, int dCol) {
+        if (movementPoints <= 0) {
+            std::cout << "No movement points. Roll dice with SPACE first.\n";
+            return;
+        }
+
         int newRow = tokenRow + dRow;
         int newCol = tokenCol + dCol;
 
@@ -492,9 +566,17 @@ protected:
         tokenRow = newRow;
         tokenCol = newCol;
 
-        std::cout << "Token moved to cell ("
-                  << tokenRow << ", " << tokenCol << ")\n";
+        movementPoints--;
+
+        std::cout
+            << "Token moved to cell ("
+            << tokenRow << ", " << tokenCol << ")\n"
+            << "Movement points left: "
+            << movementPoints << "\n";
     }
+
+
+
 
     //from object-local coordinates to world coordinates
     glm::mat4 tokenModelMatrix() const {
