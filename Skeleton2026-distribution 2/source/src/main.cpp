@@ -20,11 +20,20 @@ struct UniformBufferObject {
 
 // Uniform buffer shared by the whole scene
 struct GlobalUniformBufferObject {
-    alignas(16) glm::vec3 lightPos;
+    alignas(16) glm::mat4 lightViewProj;
+    alignas(16) glm::vec4 lightPos;
     alignas(16) glm::vec4 lightColor;
-    alignas(16) glm::vec3 eyePos;
+    alignas(16) glm::vec4 eyePos;
+    alignas(16) glm::vec4 shadowParams;
 };
 
+struct ShadowGlobalUniformBufferObject {
+    alignas(16) glm::mat4 lightViewProj;
+};
+
+struct ShadowLocalUniformBufferObject {
+    alignas(16) glm::mat4 mMat;
+};
 
 // Vertex format used by our Arena shaders.
 // Each vertex has a position, a normal, and texture coordinates.
@@ -44,11 +53,16 @@ protected:
     DescriptorSetLayout DSLlocal;
     DescriptorSetLayout DSLglobal;
 
-    VertexDescriptor VD;
-    RenderPass RP;
-    Pipeline P;
+    DescriptorSetLayout DSLshadowGlobal;
+    DescriptorSetLayout DSLshadowLocal;
 
-    DescriptorSet DSglobal;
+    VertexDescriptor VD;
+
+    RenderPass RP;
+    RenderPass RPshadow;
+
+    Pipeline P;
+    Pipeline Pshadow;
 
     Scene SC;
     std::vector<VertexDescriptorRef> VDRs;
@@ -169,11 +183,28 @@ protected:
         // binding 0 = per-object uniform buffer
         // binding 1 = object texture
         DSLlocal.init(this, {
+    {
+        0,
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+        VK_SHADER_STAGE_ALL_GRAPHICS,
+        sizeof(UniformBufferObject),
+        1
+    },
+    {
+        1,
+        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+        VK_SHADER_STAGE_FRAGMENT_BIT,
+        0,
+        1
+    }
+});
+
+        DSLglobal.init(this, {
             {
                 0,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 VK_SHADER_STAGE_ALL_GRAPHICS,
-                sizeof(UniformBufferObject),
+                sizeof(GlobalUniformBufferObject),
                 1
             },
             {
@@ -185,14 +216,22 @@ protected:
             }
         });
 
-        // Global descriptor layout:
-        // binding 0 = light and camera data
-        DSLglobal.init(this, {
+        DSLshadowGlobal.init(this, {
             {
                 0,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                VK_SHADER_STAGE_ALL_GRAPHICS,
-                sizeof(GlobalUniformBufferObject),
+                VK_SHADER_STAGE_VERTEX_BIT,
+                sizeof(ShadowGlobalUniformBufferObject),
+                1
+            }
+        });
+
+        DSLshadowLocal.init(this, {
+            {
+                0,
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                VK_SHADER_STAGE_VERTEX_BIT,
+                sizeof(ShadowLocalUniformBufferObject),
                 1
             }
         });
@@ -230,11 +269,34 @@ protected:
             }
         });
 
-        // Render pass
+        // Main render pass to the screen.
         RP.init(this);
         RP.properties[0].clearValue = {0.05f, 0.07f, 0.10f, 1.0f};
 
-        // Custom Arena pipeline
+        // Shadow render pass: depth-only texture, 2048 x 2048.
+        RPshadow.init(
+            this,
+            2048,
+            2048,
+            -1,
+            RenderPass::getStandardAttchmentsProperties(AT_DEPTH_ONLY, this),
+            RenderPass::getStandardDependencies(ATDEP_DEPTH_TRANS),
+            true
+        );
+
+        // Shadow pipeline: writes only depth from the lamp view.
+        Pshadow.init(
+            this,
+            &VD,
+            "shaders/Shadow.vert.spv",
+            "shaders/Shadow.frag.spv",
+            {&DSLshadowGlobal, &DSLshadowLocal}
+        );
+
+        Pshadow.setCullMode(VK_CULL_MODE_NONE);
+        Pshadow.setCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
+
+        // Main arena pipeline.
         P.init(
             this,
             &VD,
@@ -245,7 +307,7 @@ protected:
 
         // Disabled for now because our custom cube may have mixed winding.
         P.setCullMode(VK_CULL_MODE_NONE);
-
+        P.setCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
         // Descriptor pool size.
         // We have several scene objects, so this must be larger than the starter default.
         DPSZs.uniformBlocksInPool = 30;
@@ -257,17 +319,47 @@ protected:
         VDRs.resize(1);
         VDRs[0].init("VDposNormUV", &VD);
 
-        PRs.resize(1);
-        PRs[0].init("ArenaTechnique", {
-            {&P, {
-                {},
-                {
-                    {true, 0, {}}
-                }
-            }}
-        }, 1, &VD);
 
-        if (SC.init(this, 1, VDRs, PRs, "assets/scenes/scene.json") != 0) {
+        TextureDefs shadowMapTexture{};
+        shadowMapTexture.fromInstance = false;
+        shadowMapTexture.pos = 0;
+        shadowMapTexture.info = {};
+
+        TextureDefs objectTexture{};
+        objectTexture.fromInstance = true;
+        objectTexture.pos = 0;
+        objectTexture.info = {};
+        PRs.resize(1);
+        PRs[0].init(
+            "ArenaTechnique",
+            {
+                // Pass 0: shadow pass.
+                // Descriptor set 0 = shadow global UBO.
+                // Descriptor set 1 = shadow local UBO.
+                {
+                    &Pshadow,
+                    {
+                        {},
+                        {}
+                    }
+                },
+
+                // Pass 1: main render pass.
+                // Descriptor set 0 = global UBO + shadow map.
+                // Descriptor set 1 = local UBO + object texture.
+                {
+                    &P,
+                    {
+                        {shadowMapTexture},
+                        {objectTexture}
+                    }
+                }
+            },
+            1,
+            &VD
+        );
+
+        if (SC.init(this, 2, VDRs, PRs, "assets/scenes/scene.json") != 0) {
             std::cout << "ERROR LOADING THE SCENE\n";
             exit(0);
         }
@@ -290,34 +382,42 @@ protected:
         );
     }
 
-
     void pipelinesAndDescriptorSetsInit() {
+        RPshadow.create();
         RP.create();
 
+        Pshadow.create(&RPshadow);
         P.create(&RP);
 
-        DSglobal.init(this, &DSLglobal, {});
+        // Now that RPshadow.create() has created the depth texture and sampler,
+        // update the placeholder shadow-map descriptor used by the main pass.
+        PRs[0].PT[1].texDefs[0][0].info =
+            RPshadow.attachments[0].getViewAndSampler();
 
         SC.pipelinesAndDescriptorSetsInit();
         txt.pipelinesAndDescriptorSetsInit();
     }
 
-
     void pipelinesAndDescriptorSetsCleanup() {
+        Pshadow.cleanup();
         P.cleanup();
+
+        RPshadow.cleanup();
         RP.cleanup();
-        DSglobal.cleanup();
 
         SC.pipelinesAndDescriptorSetsCleanup();
         txt.pipelinesAndDescriptorSetsCleanup();
     }
-
-
     void localCleanup() {
         DSLlocal.cleanup();
         DSLglobal.cleanup();
+        DSLshadowGlobal.cleanup();
+        DSLshadowLocal.cleanup();
 
+        Pshadow.destroy();
         P.destroy();
+
+        RPshadow.destroy();
         RP.destroy();
 
         SC.localCleanup();
@@ -340,10 +440,14 @@ protected:
 
 
     void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
-        RP.begin(commandBuffer, currentImage);
-
+        // Pass 0: render scene from lamp view into the shadow depth texture.
+        RPshadow.begin(commandBuffer, currentImage);
         SC.populateCommandBuffer(commandBuffer, 0, currentImage);
+        RPshadow.end(commandBuffer);
 
+        // Pass 1: render scene normally from camera view, sampling the shadow map.
+        RP.begin(commandBuffer, currentImage);
+        SC.populateCommandBuffer(commandBuffer, 1, currentImage);
         RP.end(commandBuffer);
     }
 
@@ -362,29 +466,42 @@ protected:
         updateTokenInstance();
         updateDiceInstances(deltaT);
 
+        glm::mat4 lightViewProj = computeLightViewProj();
+
+        ShadowGlobalUniformBufferObject sgubo{};
+        sgubo.lightViewProj = lightViewProj;
+
         GlobalUniformBufferObject gubo{};
-
-        // Position of the visible lamp in world space.
-        // This should match the lamp_bulb instance in scene.json.
-        gubo.lightPos = glm::vec3(3.0f, 2.2f, 2.2f);
-
-        // Warm tabletop lamp color/intensity.
+        gubo.lightViewProj = lightViewProj;
+        gubo.lightPos = glm::vec4(lampPosition(), 1.0f);
         gubo.lightColor = glm::vec4(1.0f, 0.82f, 0.55f, 1.0f) * 7.0f;
+        gubo.eyePos = glm::vec4(glm::vec3(glm::inverse(View)[3]), 1.0f);
 
-        // Camera position, used for specular highlights.
-        gubo.eyePos = glm::vec3(glm::inverse(View)[3]);
-
-        DSglobal.map(currentImage, &gubo, 0);
+        // x = base bias
+        // y = shadow strength
+        // z = shadow map size
+        // w = unused
+        gubo.shadowParams = glm::vec4(0.004f, 0.65f, 2048.0f, 0.0f);
 
         UniformBufferObject ubo{};
+        ShadowLocalUniformBufferObject slubo{};
 
         for (int instanceId = 0; instanceId < SC.TI[0].InstanceCount; instanceId++) {
-            ubo.mMat = SC.TI[0].I[instanceId].Wm;
-            ubo.mvpMat = ViewPrj * ubo.mMat;
+            glm::mat4 model = SC.TI[0].I[instanceId].Wm;
+
+            // Pass 0: shadow map uniforms.
+            slubo.mMat = model;
+
+            SC.TI[0].I[instanceId].DS[0][0]->map(currentImage, &sgubo, 0);
+            SC.TI[0].I[instanceId].DS[0][1]->map(currentImage, &slubo, 0);
+
+            // Pass 1: main render uniforms.
+            ubo.mMat = model;
+            ubo.mvpMat = ViewPrj * model;
             ubo.materialColor = objectMaterialColor(instanceId);
 
-            SC.TI[0].I[instanceId].DS[0][0]->map(currentImage, &gubo, 0);
-            SC.TI[0].I[instanceId].DS[0][1]->map(currentImage, &ubo, 0);
+            SC.TI[0].I[instanceId].DS[1][0]->map(currentImage, &gubo, 0);
+            SC.TI[0].I[instanceId].DS[1][1]->map(currentImage, &ubo, 0);
         }
 
         updateHudText(deltaT);
@@ -733,6 +850,34 @@ protected:
         return M;
     }
 
+
+    glm::vec3 lampPosition() const {
+        return glm::vec3(3.0f, 2.2f, 2.2f);
+    }
+
+    glm::vec3 lampTarget() const {
+        return glm::vec3(0.0f, 0.15f, 0.0f);
+    }
+
+    glm::mat4 computeLightViewProj() const {
+        glm::mat4 lightView = glm::lookAt(
+            lampPosition(),
+            lampTarget(),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+
+        glm::mat4 lightProj = glm::perspective(
+            glm::radians(70.0f),
+            1.0f,
+            0.1f,
+            12.0f
+        );
+
+        // Vulkan clip-space correction.
+        lightProj[1][1] *= -1.0f;
+
+        return lightProj * lightView;
+    }
 
     glm::vec4 objectMaterialColor(int instanceId) const {
         switch (instanceId) {

@@ -1,14 +1,16 @@
 #version 450
 
 layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
-    vec3 lightPos; //position of the light
-    vec4 lightColor; //color and intensity
-    vec3 eyePos; //viewer position
+    mat4 lightViewProj;
+    vec4 lightPos;
+    vec4 lightColor;
+    vec4 eyePos;
+    vec4 shadowParams;
 } gubo;
 
 layout(set = 1, binding = 0) uniform UniformBufferObject {
-    mat4 mvpMat; //Projection x View x Model
-    mat4 mMat; //model matrix, Projection x view x model
+    mat4 mvpMat;
+    mat4 mMat;
     vec4 materialColor;
 } ubo;
 
@@ -24,10 +26,7 @@ void main() {
     vec4 worldPos = ubo.mMat * vec4(inPosition, 1.0);
 
     fragWorldPos = worldPos.xyz;
-
-    mat3 normalMatrix = transpose(inverse(mat3(ubo.mMat)));
-    fragNormal = normalize(normalMatrix * inNormal);
-
+    fragNormal = normalize(transpose(inverse(mat3(ubo.mMat))) * inNormal);
     fragUV = inUV;
 
     gl_Position = ubo.mvpMat * vec4(inPosition, 1.0);
