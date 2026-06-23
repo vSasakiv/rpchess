@@ -20,7 +20,7 @@ struct UniformBufferObject {
 
 // Uniform buffer shared by the whole scene
 struct GlobalUniformBufferObject {
-    alignas(16) glm::vec3 lightDir;
+    alignas(16) glm::vec3 lightPos;
     alignas(16) glm::vec4 lightColor;
     alignas(16) glm::vec3 eyePos;
 };
@@ -362,28 +362,16 @@ protected:
         updateTokenInstance();
         updateDiceInstances(deltaT);
 
-        // Rotating directional light.
-        static float lightRotationAngle = 0.0f;
-        lightRotationAngle += -0.5f * deltaT;
-
-        const glm::mat4 lightView =
-            glm::rotate(
-                glm::mat4(1.0f),
-                glm::radians(lightRotationAngle),
-                glm::vec3(0.0f, 1.0f, 0.0f)
-            ) *
-            glm::rotate(
-                glm::mat4(1.0f),
-                glm::radians(-45.0f),
-                glm::vec3(1.0f, 0.0f, 0.0f)
-            );
-
-        const glm::vec3 lightDir =
-            glm::vec3(lightView * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
-
         GlobalUniformBufferObject gubo{};
-        gubo.lightDir = lightDir;
-        gubo.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) * 5.0f;
+
+        // Position of the visible lamp in world space.
+        // This should match the lamp_bulb instance in scene.json.
+        gubo.lightPos = glm::vec3(3.0f, 2.2f, 2.2f);
+
+        // Warm tabletop lamp color/intensity.
+        gubo.lightColor = glm::vec4(1.0f, 0.82f, 0.55f, 1.0f) * 7.0f;
+
+        // Camera position, used for specular highlights.
         gubo.eyePos = glm::vec3(glm::inverse(View)[3]);
 
         DSglobal.map(currentImage, &gubo, 0);
