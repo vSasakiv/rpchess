@@ -14,6 +14,7 @@
 struct UniformBufferObject {
     alignas(16) glm::mat4 mvpMat;
     alignas(16) glm::mat4 mMat;
+    alignas(16) glm::vec4 materialColor;
 };
 
 
@@ -116,9 +117,16 @@ protected:
 
     int movementPoints = 0;
 
+    // Where the dice start when thrown
+    glm::vec3 die1StartPosition = glm::vec3(-3.2f, 0.35f, -2.6f);
+    glm::vec3 die2StartPosition = glm::vec3(-2.5f, 0.35f, -2.6f);
+
+    glm::vec3 die1LandPosition = glm::vec3(-2.8f, 0.35f, -2.2f);
+    glm::vec3 die2LandPosition = glm::vec3(-2.2f, 0.35f, -2.2f);
+
     bool diceRolling = false;
     float diceRollTimer = 0.0f;
-    float diceRollDuration = 1.0f;
+    float diceRollDuration = 1.35f;
 
     float rollCooldown = 0.0f;
 
@@ -164,7 +172,7 @@ protected:
             {
                 0,
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                VK_SHADER_STAGE_VERTEX_BIT,
+                VK_SHADER_STAGE_ALL_GRAPHICS,
                 sizeof(UniformBufferObject),
                 1
             },
@@ -385,6 +393,7 @@ protected:
         for (int instanceId = 0; instanceId < SC.TI[0].InstanceCount; instanceId++) {
             ubo.mMat = SC.TI[0].I[instanceId].Wm;
             ubo.mvpMat = ViewPrj * ubo.mMat;
+            ubo.materialColor = objectMaterialColor(instanceId);
 
             SC.TI[0].I[instanceId].DS[0][0]->map(currentImage, &gubo, 0);
             SC.TI[0].I[instanceId].DS[0][1]->map(currentImage, &ubo, 0);
@@ -453,7 +462,21 @@ protected:
         // While rolling, old movement points should not be usable.
         movementPoints = 0;
 
-        std::cout << "Rolling dice...\n";
+        // Reset spin at the start of each throw.
+        die1Spin = 0.0f;
+        die2Spin = 0.0f;
+
+        // Small random variation in landing positions.
+        float offset1X = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
+        float offset1Z = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
+
+        float offset2X = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
+        float offset2Z = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
+
+        die1LandPosition = glm::vec3(-2.8f + offset1X, 0.35f, -2.2f + offset1Z);
+        die2LandPosition = glm::vec3(-2.2f + offset2X, 0.35f, -2.2f + offset2Z);
+
+        std::cout << "Throwing dice...\n";
     }
 
 
@@ -692,32 +715,65 @@ protected:
 
 
     glm::mat4 diceModelMatrix(
-        const glm::vec3& position,
-        float spin,
-        int value,
-        bool secondDie
-    ) const {
+       const glm::vec3& position,
+       float spin,
+       int value,
+       bool secondDie
+   ) const {
         float valueAngle = glm::radians(static_cast<float>(value) * 25.0f);
 
         glm::mat4 M = glm::mat4(1.0f);
 
+        // Translation: where the die is in the world.
         M = glm::translate(M, position);
 
+        // Rotation: while rolling, spin strongly around several axes.
+        // When stopped, valueAngle makes different values rest differently.
         if (secondDie) {
             M = glm::rotate(M, -spin + valueAngle, glm::vec3(1.0f, 0.0f, 0.0f));
-            M = glm::rotate(M, spin * 0.7f + valueAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-            M = glm::rotate(M, spin * 0.4f, glm::vec3(0.0f, 0.0f, 1.0f));
+            M = glm::rotate(M, spin * 0.9f + valueAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+            M = glm::rotate(M, spin * 0.6f, glm::vec3(0.0f, 0.0f, 1.0f));
         } else {
             M = glm::rotate(M, spin + valueAngle, glm::vec3(1.0f, 0.0f, 0.0f));
-            M = glm::rotate(M, spin * 0.8f + valueAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-            M = glm::rotate(M, -spin * 0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
+            M = glm::rotate(M, spin * 1.1f + valueAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+            M = glm::rotate(M, -spin * 0.7f, glm::vec3(0.0f, 0.0f, 1.0f));
         }
 
+        // Dice size.
         M = glm::scale(M, glm::vec3(0.45f, 0.45f, 0.45f));
 
         return M;
     }
 
+
+    glm::vec4 objectMaterialColor(int instanceId) const {
+        switch (instanceId) {
+        case 0:
+            // table_surface
+            return glm::vec4(0.45f, 0.25f, 0.10f, 1.0f);
+
+        case 1:
+            // game_board
+            return glm::vec4(0.15f, 0.45f, 0.18f, 1.0f);
+
+        case 2:
+            // player_token
+            return glm::vec4(1.0f, 0.25f, 0.10f, 1.0f);
+
+        case 3:
+        case 4:
+            // blocked cells / obstacles
+            return glm::vec4(0.25f, 0.25f, 0.28f, 1.0f);
+
+        case 5:
+        case 6:
+            // dice
+            return glm::vec4(0.95f, 0.95f, 0.90f, 1.0f);
+
+        default:
+            return glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
 
     void updateDiceInstances(float deltaT) {
         if (SC.TI == nullptr) {
@@ -728,13 +784,47 @@ protected:
             return;
         }
 
-        if (diceRolling) {
-            die1Spin += 8.0f * deltaT;
-            die2Spin += 10.0f * deltaT;
-        }
+        glm::vec3 die1Position = die1LandPosition;
+        glm::vec3 die2Position = die2LandPosition;
 
-        glm::vec3 die1Position = glm::vec3(-2.8f, 0.35f, -2.2f);
-        glm::vec3 die2Position = glm::vec3(-2.2f, 0.35f, -2.2f);
+        if (diceRolling) {
+            // Progress goes from 0 to 1 during the roll.
+            float t = diceRollTimer / diceRollDuration;
+            t = std::clamp(t, 0.0f, 1.0f);
+
+            // Smooth horizontal movement.
+            float smoothT = t * t * (3.0f - 2.0f * t);
+
+            // Manual PI constant to avoid relying on extra includes.
+            const float PI = 3.14159265359f;
+
+            // Main throw arc: starts low, goes high, lands low.
+            float arcHeight = std::sin(PI * t) * 0.75f;
+
+            // Small bounce near the end.
+            float bounce = 0.0f;
+            if (t > 0.65f) {
+                float bounceT = (t - 0.65f) / 0.35f;
+                bounce = std::abs(std::sin(bounceT * PI * 3.0f)) *
+                         (1.0f - bounceT) *
+                         0.18f;
+            }
+
+            die1Position =
+                die1StartPosition * (1.0f - smoothT) +
+                die1LandPosition * smoothT;
+
+            die2Position =
+                die2StartPosition * (1.0f - smoothT) +
+                die2LandPosition * smoothT;
+
+            die1Position.y += arcHeight + bounce;
+            die2Position.y += arcHeight + bounce * 0.8f;
+
+            // Fast spin while the dice are rolling.
+            die1Spin += 16.0f * deltaT;
+            die2Spin += 19.0f * deltaT;
+        }
 
         SC.TI[0].I[DIE_1_INSTANCE_INDEX].Wm =
             diceModelMatrix(die1Position, die1Spin, die1Value, false);

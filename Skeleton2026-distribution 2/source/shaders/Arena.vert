@@ -7,8 +7,9 @@ layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
 } gubo;
 
 layout(set = 1, binding = 0) uniform UniformBufferObject {
-    mat4 mvpMat; //model matrix, places the object in the world
-    mat4 mMat; //model-view-projection matrix, Projection x view x model
+    mat4 mvpMat; //model-view-projection matrix, places the object in the world
+    mat4 mMat; //model matrix, Projection x view x model
+    vec4 materialColor;
 } ubo;
 
 layout(location = 0) in vec3 inPosition;

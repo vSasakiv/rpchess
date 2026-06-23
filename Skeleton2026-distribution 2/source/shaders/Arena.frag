@@ -6,6 +6,12 @@ layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
     vec3 eyePos;
 } gubo;
 
+layout(set = 1, binding = 0) uniform UniformBufferObject {
+    mat4 mvpMat;
+    mat4 mMat;
+    vec4 materialColor;
+} ubo;
+
 layout(set = 1, binding = 1) uniform sampler2D texSampler;
 
 layout(location = 0) in vec3 fragWorldPos;
@@ -21,12 +27,13 @@ void main() {
     vec3 H = normalize(L + V);
 
     vec3 texColor = texture(texSampler, fragUV).rgb;
+    vec3 baseColor = mix(texColor, ubo.materialColor.rgb, 0.75);
 
     float ambientStrength = 0.18;
-    vec3 ambient = ambientStrength * texColor;
+    vec3 ambient = ambientStrength * baseColor;
 
     float diff = max(dot(N, L), 0.0);
-    vec3 diffuse = diff * texColor * gubo.lightColor.rgb;
+    vec3 diffuse = diff * baseColor * gubo.lightColor.rgb;
 
     float specularStrength = 0.35;
     float shininess = 32.0;
