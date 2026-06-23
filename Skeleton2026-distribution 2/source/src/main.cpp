@@ -63,8 +63,8 @@ protected:
     // Orbit camera state
     glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f); //the thing the camera is centered around
     float cameraYaw = glm::radians(45.0f); //yaw = horizontal rotation
-    float cameraPitch = glm::radians(25.0f); // pitch = vertical angle above the table
-    float cameraDistance = 6.0f; // distance = zoom distance from the table
+    float cameraPitch = glm::radians(40.0f); // pitch = vertical angle above the table
+    float cameraDistance = 8.0f; // distance = zoom distance from the table
     float cameraRotationSpeed = 1.5f;
     float cameraZoomSpeed = 4.0f;
 
@@ -136,17 +136,16 @@ protected:
             {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, UV),
              sizeof(glm::vec2), UV}
         });
-
         // Render pass
         RP.init(this);
-        RP.properties[0].clearValue = {0.0f, 0.9f, 1.0f, 1.0f};
-
+        RP.properties[0].clearValue = {0.05f, 0.07f, 0.10f, 1.0f};
         // New Pipeline
         P.init(this,
                &VD,
                "shaders/Arena.vert.spv",
                "shaders/Arena.frag.spv",
                {&DSLglobal, &DSLlocal});
+        P.setCullMode(VK_CULL_MODE_NONE);
 
         // Descriptor pool size
         DPSZs.uniformBlocksInPool = 30;
@@ -155,10 +154,10 @@ protected:
 
         // Scene support
         VDRs.resize(1);
-        VDRs[0].init("VDposUV", &VD);
+        VDRs[0].init("VDposNormUV", &VD);
 
         PRs.resize(1);
-        PRs[0].init("BlinnPos", {
+        PRs[0].init("ArenaTechnique", {
             {&P, {
                 {},
                 {
@@ -516,20 +515,25 @@ protected:
     // VIEW MATRIX
     // -------------------------------
 
-    View = glm::lookAt(
-        cameraPosition,
-        cameraTarget,
-        glm::vec3(0.0f, 1.0f, 0.0f)
-    );
+        View = glm::lookAt(
+            cameraPosition,
+            cameraTarget,
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
 
-    return deltaT;
+        // Final camera matrix used by the vertex shader.
+        // This combines projection and view.
+        // Later we multiply it by each object's model matrix.
+        ViewPrj = Prj * View;
+
+        return deltaT;
 }
     //turns the board cells into a 3D position
     glm::vec3 gridToWorld(int row, int col) const {
         float x = (static_cast<float>(col) - (GRID_COLS - 1) * 0.5f) * CELL_SIZE;
         float z = (static_cast<float>(row) - (GRID_ROWS - 1) * 0.5f) * CELL_SIZE;
 
-        return glm::vec3(x, 0.08f, z);
+        return glm::vec3(x, 0.32f, z);
     }
     //check to see if it is inside the board
     bool isInsideBoard(int row, int col) const {
@@ -583,8 +587,7 @@ protected:
         glm::vec3 pos = gridToWorld(tokenRow, tokenCol);
 
         return glm::translate(glm::mat4(1.0f), pos) *
-               glm::scale(glm::mat4(1.0f), glm::vec3(0.28f, 1.0f, 0.28f));
-    }
+       glm::scale(glm::mat4(1.0f), glm::vec3(0.35f, 0.20f, 0.35f));}
 
     //Game-state objkect to the rendered scene instance
     void updateTokenInstance() {

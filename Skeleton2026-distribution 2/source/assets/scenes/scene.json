@@ -1,56 +1,76 @@
 {
+	"assetfiles": [],
 	"models": [
-		{"id": "floor", "VD": "VDposUV", "model": "assets/models/Plane.gltf",  "format":"GLTF"}
+		{
+			"id": "cube",
+			"VD": "VDposNormUV",
+			"model": "assets/models/Cube.obj",
+			"format": "OBJ"
+		}
 	],
 	"textures": [
-		{"id": "tex", "texture": "assets/textures/toChange.jpg", "format": "C"}
+		{
+			"id": "tex",
+			"texture": "assets/textures/toChange.jpg",
+			"format": "C"
+		}
 	],
 	"instances": [
-		{"technique": "BlinnPos", "elements": [
-			{
-				"id": "table_surface",
-				"model": "floor",
-				"texture": ["tex"],
-				"translate": [0.0, -0.02, 0.0],
-				"scale": [8.0, 1.0, 8.0]
-			},
-			{
-				"id": "game_board",
-				"model": "floor",
-				"texture": ["tex"],
-				"translate": [0.0, 0.02, 0.0],
-				"scale": [3.2, 1.0, 3.2]
-			},
-			{
-				"id": "player_token",
-				"model": "floor",
-				"texture": ["tex"],
-				"translate": [-1.875, 0.08, 1.875],
-				"scale": [0.28, 1.0, 0.28]
-			},
-			{
-				"id": "blocked_cell_a",
-				"model": "floor",
-				"texture": ["tex"],
-				"translate": [-0.375, 0.07, -1.125],
-				"scale": [0.32, 1.0, 0.32]
-			},
-			{
-				"id": "blocked_cell_b",
-				"model": "floor",
-				"texture": ["tex"],
-				"translate": [1.125, 0.07, 0.375],
-				"scale": [0.32, 1.0, 0.32]
-			},
-			{
-				"id": "vertical_depth_marker",
-				"model": "floor",
-				"texture": ["tex"],
-				"translate": [0.0, 0.8, -3.25],
-				"eulerAngles": [90.0, 0.0, 0.0],
-				"scale": [3.2, 1.0, 0.7]
-			}
-		]
+		{
+			"technique": "ArenaTechnique",
+			"elements": [
+				{
+					"id": "table_surface",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, 0.0, 0.0],
+					"scale": [8.0, 0.20, 6.0]
+				},
+				{
+					"id": "game_board",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, 0.16, 0.0],
+					"scale": [3.2, 0.08, 3.2]
+				},
+				{
+					"id": "player_token",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [-1.875, 0.32, 1.875],
+					"scale": [0.35, 0.20, 0.35]
+				},
+				{
+					"id": "blocked_cell_a",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [-0.375, 0.32, -1.125],
+					"scale": [0.45, 0.20, 0.45]
+				},
+				{
+					"id": "blocked_cell_b",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [1.125, 0.32, 0.375],
+					"scale": [0.45, 0.20, 0.45]
+				},
+				{
+					"id": "die_1",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [-2.8, 0.35, -2.2],
+					"scale": [0.45, 0.45, 0.45],
+					"eulerAngles": [20.0, 35.0, 10.0]
+				},
+				{
+					"id": "die_2",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [-2.2, 0.35, -2.2],
+					"scale": [0.45, 0.45, 0.45],
+					"eulerAngles": [10.0, 65.0, 25.0]
+				}
+			]
 		}
 	]
 }

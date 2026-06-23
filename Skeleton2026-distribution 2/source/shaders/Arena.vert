@@ -1,14 +1,14 @@
 #version 450
 
 layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
-    vec3 lightDir;
-    vec4 lightColor;
-    vec3 eyePos;
+    vec3 lightDir; //direction of the light
+    vec4 lightColor; //color and intensity
+    vec3 eyePos; //viewer position
 } gubo;
 
 layout(set = 1, binding = 0) uniform UniformBufferObject {
-    mat4 mvpMat;
-    mat4 mMat;
+    mat4 mvpMat; //model matrix, places the object in the world
+    mat4 mMat; //model-view-projection matrix, Projection x view x model
 } ubo;
 
 layout(location = 0) in vec3 inPosition;
