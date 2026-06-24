@@ -6,12 +6,59 @@
 			"VD": "VDposNormUV",
 			"model": "assets/models/Cube.obj",
 			"format": "OBJ"
+		},
+		{
+			"id": "board",
+			"VD": "VDposNormUV",
+			"model": "assets/models/board.gltf",
+			"format": "GLTF"
+		},
+		{
+			"id": "pawn",
+			"VD": "VDposNormUV",
+			"model": "assets/models/pieces/pawn.gltf",
+			"format": "GLTF"
+		},
+		{
+			"id": "bishop",
+			"VD": "VDposNormUV",
+			"model": "assets/models/pieces/bishop.gltf",
+			"format": "GLTF"
+		},
+		{
+			"id": "knight",
+			"VD": "VDposNormUV",
+			"model": "assets/models/pieces/knight.gltf",
+			"format": "GLTF"
+		},
+		{
+			"id": "rook",
+			"VD": "VDposNormUV",
+			"model": "assets/models/pieces/rook.gltf",
+			"format": "GLTF"
+		},
+		{
+			"id": "queen",
+			"VD": "VDposNormUV",
+			"model": "assets/models/pieces/queen.gltf",
+			"format": "GLTF"
+		},
+		{
+			"id": "king",
+			"VD": "VDposNormUV",
+			"model": "assets/models/pieces/king.gltf",
+			"format": "GLTF"
 		}
 	],
 	"textures": [
 		{
 			"id": "tex",
 			"texture": "assets/textures/toChange.jpg",
+			"format": "C"
+		},
+		{
+			"id": "chess_board_base",
+			"texture": "assets/textures/chess_baseColor.png",
 			"format": "C"
 		}
 	],
@@ -24,41 +71,42 @@
 					"model": "cube",
 					"texture": ["tex"],
 					"translate": [0.0, 0.0, 0.0],
-					"scale": [8.0, 0.20, 6.0]
+					"scale": [20.0, 0.20, 20.0]
 				},
 				{
 					"id": "game_board",
-					"model": "cube",
-					"texture": ["tex"],
-					"translate": [0.0, 0.16, 0.0],
-					"scale": [3.2, 0.08, 3.2]
+					"model": "board",
+					"texture": ["chess_board_base"],
+					"translate": [0.0, 0.0, 0.0],
+					"scale": [1, 1, 1],
+					"eulerAngles": [-90.0, 0.0, 0.0]
 				},
 				{
 					"id": "player_token",
 					"model": "cube",
 					"texture": ["tex"],
-					"translate": [-1.875, 0.32, 1.875],
+					"translate": [-2, 0.32, 2],
 					"scale": [0.35, 0.20, 0.35]
 				},
 				{
 					"id": "blocked_cell_a",
 					"model": "cube",
 					"texture": ["tex"],
-					"translate": [-0.375, 0.32, -1.125],
+					"translate": [-0.5, 0.32, -1.5],
 					"scale": [0.45, 0.20, 0.45]
 				},
 				{
 					"id": "blocked_cell_b",
 					"model": "cube",
 					"texture": ["tex"],
-					"translate": [1.125, 0.32, 0.375],
+					"translate": [1.5, 0.32, 0.5],
 					"scale": [0.45, 0.20, 0.45]
 				},
 				{
 					"id": "die_1",
 					"model": "cube",
 					"texture": ["tex"],
-					"translate": [-2.8, 0.35, -2.2],
+					"translate": [-4.0, 0.35, -8.2],
 					"scale": [0.45, 0.45, 0.45],
 					"eulerAngles": [20.0, 35.0, 10.0]
 				},
@@ -66,7 +114,7 @@
 					"id": "die_2",
 					"model": "cube",
 					"texture": ["tex"],
-					"translate": [-2.2, 0.35, -2.2],
+					"translate": [-3.0, 0.35, -8.2],
 					"scale": [0.45, 0.45, 0.45],
 					"eulerAngles": [10.0, 65.0, 25.0]
 				},
@@ -74,15 +122,113 @@
 					"id": "lamp_post",
 					"model": "cube",
 					"texture": ["tex"],
-					"translate": [3.0, 1.05, 2.2],
+					"translate": [4.7, 1.05, -4.7],
 					"scale": [0.10, 2.0, 0.10]
 				},
 				{
 					"id": "lamp_bulb",
 					"model": "cube",
 					"texture": ["tex"],
-					"translate": [3.0, 2.2, 2.2],
+					"translate": [4.7, 2.2, -4.7],
 					"scale": [0.30, 0.30, 0.30]
+				},
+
+				{
+					"id": "pawn_1",
+					"model": "pawn",
+					"texture": ["tex"],
+					"translate": [-3.5, 0.32, 2.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "knight_1",
+					"model": "knight",
+					"texture": ["tex"],
+					"translate": [-3.5, 0.32, 1.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "bishop_1",
+					"model": "bishop",
+					"texture": ["tex"],
+					"translate": [-3.5, 0.32, 0.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "rook_1",
+					"model": "rook",
+					"texture": ["tex"],
+					"translate": [-3.5, 0.32, -0.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "queen_1",
+					"model": "queen",
+					"texture": ["tex"],
+					"translate": [-3.5, 0.32, -1.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "king_1",
+					"model": "king",
+					"texture": ["tex"],
+					"translate": [-3.5, 0.32, -2.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+
+				{
+					"id": "pawn_2",
+					"model": "pawn",
+					"texture": ["tex"],
+					"translate": [2.5, 0.32, 2.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "knight_2",
+					"model": "knight",
+					"texture": ["tex"],
+					"translate": [2.5, 0.32, 1.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "bishop_2",
+					"model": "bishop",
+					"texture": ["tex"],
+					"translate": [2.5, 0.32, 0.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "rook_2",
+					"model": "rook",
+					"texture": ["tex"],
+					"translate": [2.5, 0.32, -0.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "queen_2",
+					"model": "queen",
+					"texture": ["tex"],
+					"translate": [2.5, 0.32, -1.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "king_2",
+					"model": "king",
+					"texture": ["tex"],
+					"translate": [2.5, 0.32, -2.5],
+					"scale": [0.15, 0.15, 0.15],
+					"eulerAngles": [-90.0, 0.0, 0.0]
 				}
 			]
 		}

@@ -83,7 +83,7 @@ void main() {
     vec3 H = normalize(L + V);
 
     vec3 texColor = texture(texSampler, fragUV).rgb;
-    vec3 baseColor = mix(texColor, ubo.materialColor.rgb, 0.75);
+    vec3 baseColor = mix(texColor, ubo.materialColor.rgb, ubo.materialColor.a);
 
     float constantAtt = 1.0;
     float linearAtt = 0.18;

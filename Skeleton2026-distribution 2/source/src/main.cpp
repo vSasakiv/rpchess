@@ -96,7 +96,7 @@ protected:
 
     static constexpr int GRID_ROWS = 8;
     static constexpr int GRID_COLS = 8;
-    static constexpr float CELL_SIZE = 0.75f;
+    static constexpr float CELL_SIZE = 1.0f;
 
     // Scene instance indices from scene.json:
     // 0 = table_surface
@@ -883,28 +883,42 @@ protected:
         switch (instanceId) {
         case 0:
             // table_surface
-            return glm::vec4(0.45f, 0.25f, 0.10f, 1.0f);
-
-        case 1:
-            // game_board
-            return glm::vec4(0.15f, 0.45f, 0.18f, 1.0f);
+            return glm::vec4(0.45f, 0.25f, 0.10f, 0.25f);
 
         case 2:
             // player_token
-            return glm::vec4(1.0f, 0.25f, 0.10f, 1.0f);
+            return glm::vec4(1.0f, 0.25f, 0.10f, 0.25f);
 
         case 3:
         case 4:
             // blocked cells / obstacles
-            return glm::vec4(0.25f, 0.25f, 0.28f, 1.0f);
+            return glm::vec4(0.25f, 0.25f, 0.28f, 0.25f);
 
         case 5:
         case 6:
             // dice
+            return glm::vec4(0.95f, 0.95f, 0.90f, 0.25f);
+
+        case 9:
+        case 10:
+        case 11:
+        case 12:
+        case 13:
+        case 14:
+            // white pieces
             return glm::vec4(0.95f, 0.95f, 0.90f, 1.0f);
 
+        case 15:
+        case 16:
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+            // black pieces
+            return glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
+
         default:
-            return glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+            return glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
         }
     }
 
