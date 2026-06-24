@@ -73,8 +73,6 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
   -
     kind: "message-v1"
     backtrace:
@@ -90,8 +88,8 @@ events:
       
       The output was:
       0
-      MSBuild version 17.14.40+3e7442088 for .NET Framework
-      Build started 18.06.2026 17:19:56.
+      MSBuild version 18.0.5+e22287bf1 for .NET Framework
+      Build started 24.06.2026 17:34:18.
       
       Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\4.3.3\\CompilerIdCXX\\CompilerIdCXX.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -102,15 +100,15 @@ events:
         Creating "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
         Touching "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
       ClCompile:
-        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
+        C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc145.pdb" /external:W0 /Gd /TP /FC /errorReport:queue CMakeCXXCompilerId.cpp
         CMakeCXXCompilerId.cpp
       Link:
-        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
+        C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdCXX.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdCXX.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdCXX.lib" /MACHINE:X64 Debug\\CMakeCXXCompilerId.obj
         CompilerIdCXX.vcxproj -> C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\4.3.3\\CompilerIdCXX\\CompilerIdCXX.exe
       PostBuildEvent:
         for %%i in (cl.exe) do @echo CMAKE_CXX_COMPILER=%%~$PATH:i
         :VCEnd
-        CMAKE_CXX_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe
+        CMAKE_CXX_COMPILER=C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\Hostx64\\x64\\cl.exe
       FinalizeBuildStatus:
         Deleting file "Debug\\CompilerIdCXX.tlog\\unsuccessfulbuild".
         Touching "Debug\\CompilerIdCXX.tlog\\CompilerIdCXX.lastbuildstate".
@@ -120,7 +118,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:01.86
+      Time Elapsed 00:00:00.99
       
       
       Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CompilerIdCXX.exe"
@@ -152,7 +150,7 @@ events:
     names:
       - "link"
     candidate_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/"
       - "C:/VulkanSDK/1.4.341.1/Bin/"
       - "C:/Program Files/BellSoft/LibericaJDK-17/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-17.0.8.7-hotspot/bin/"
@@ -181,8 +179,8 @@ events:
       - "C:/Users/marcu/AppData/Local/Programs/Microsoft VS Code/bin/"
       - "C:/Users/marcu/.platformio/penv/Scripts/"
     searched_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.com"
-    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/link.exe"
     search_context:
       ENV{PATH}:
         - "C:\\VulkanSDK\\1.4.341.1\\Bin"
@@ -223,8 +221,6 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
   -
     kind: "find-v1"
     backtrace:
@@ -247,7 +243,7 @@ events:
     names:
       - "lld-link"
     candidate_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/"
       - "C:/VulkanSDK/1.4.341.1/Bin/"
       - "C:/Program Files/BellSoft/LibericaJDK-17/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-17.0.8.7-hotspot/bin/"
@@ -276,9 +272,9 @@ events:
       - "C:/Users/marcu/AppData/Local/Programs/Microsoft VS Code/bin/"
       - "C:/Users/marcu/.platformio/penv/Scripts/"
     searched_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.com"
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link.exe"
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lld-link"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/lld-link.com"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/lld-link.exe"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/lld-link"
       - "C:/VulkanSDK/1.4.341.1/Bin/lld-link.com"
       - "C:/VulkanSDK/1.4.341.1/Bin/lld-link.exe"
       - "C:/VulkanSDK/1.4.341.1/Bin/lld-link"
@@ -387,8 +383,6 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
   -
     kind: "find-v1"
     backtrace:
@@ -409,7 +403,7 @@ events:
     names:
       - "link"
     candidate_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/"
       - "C:/VulkanSDK/1.4.341.1/Bin/"
       - "C:/Program Files/BellSoft/LibericaJDK-17/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-17.0.8.7-hotspot/bin/"
@@ -438,8 +432,8 @@ events:
       - "C:/Users/marcu/AppData/Local/Programs/Microsoft VS Code/bin/"
       - "C:/Users/marcu/.platformio/penv/Scripts/"
     searched_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.com"
-    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/link.exe"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/link.com"
+    found: "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/link.exe"
     search_context:
       ENV{PATH}:
         - "C:\\VulkanSDK\\1.4.341.1\\Bin"
@@ -480,8 +474,6 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
   -
     kind: "find-v1"
     backtrace:
@@ -502,7 +494,7 @@ events:
     names:
       - "mt"
     candidate_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/"
       - "C:/VulkanSDK/1.4.341.1/Bin/"
       - "C:/Program Files/BellSoft/LibericaJDK-17/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-17.0.8.7-hotspot/bin/"
@@ -531,9 +523,9 @@ events:
       - "C:/Users/marcu/AppData/Local/Programs/Microsoft VS Code/bin/"
       - "C:/Users/marcu/.platformio/penv/Scripts/"
     searched_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.com"
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt.exe"
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/mt"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/mt.com"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/mt.exe"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/mt"
       - "C:/VulkanSDK/1.4.341.1/Bin/mt.com"
       - "C:/VulkanSDK/1.4.341.1/Bin/mt.exe"
       - "C:/VulkanSDK/1.4.341.1/Bin/mt"
@@ -656,8 +648,6 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
   -
     kind: "find-v1"
     backtrace:
@@ -678,7 +668,7 @@ events:
     names:
       - "lib"
     candidate_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/"
       - "C:/VulkanSDK/1.4.341.1/Bin/"
       - "C:/Program Files/BellSoft/LibericaJDK-17/bin/"
       - "C:/Program Files/Eclipse Adoptium/jdk-17.0.8.7-hotspot/bin/"
@@ -707,8 +697,8 @@ events:
       - "C:/Users/marcu/AppData/Local/Programs/Microsoft VS Code/bin/"
       - "C:/Users/marcu/.platformio/penv/Scripts/"
     searched_directories:
-      - "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.com"
-    found: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/lib.exe"
+      - "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/lib.com"
+    found: "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/Hostx64/x64/lib.exe"
     search_context:
       ENV{PATH}:
         - "C:\\VulkanSDK\\1.4.341.1\\Bin"
@@ -749,8 +739,6 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
   -
     kind: "find-v1"
     backtrace:
@@ -810,9 +798,9 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files/CMake/sbin/"
       - "C:/Program Files/CMake/"
-      - "C:/Program Files/SkeletonToChange/bin/"
-      - "C:/Program Files/SkeletonToChange/sbin/"
-      - "C:/Program Files/SkeletonToChange/"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/"
+      - "C:/Program Files (x86)/SkeletonToChange/"
     searched_directories:
       - "C:/VulkanSDK/1.4.341.1/Bin/rc.com"
       - "C:/VulkanSDK/1.4.341.1/Bin/rc.exe"
@@ -922,15 +910,15 @@ events:
       - "C:/Program Files/CMake/rc.com"
       - "C:/Program Files/CMake/rc.exe"
       - "C:/Program Files/CMake/rc"
-      - "C:/Program Files/SkeletonToChange/bin/rc.com"
-      - "C:/Program Files/SkeletonToChange/bin/rc.exe"
-      - "C:/Program Files/SkeletonToChange/bin/rc"
-      - "C:/Program Files/SkeletonToChange/sbin/rc.com"
-      - "C:/Program Files/SkeletonToChange/sbin/rc.exe"
-      - "C:/Program Files/SkeletonToChange/sbin/rc"
-      - "C:/Program Files/SkeletonToChange/rc.com"
-      - "C:/Program Files/SkeletonToChange/rc.exe"
-      - "C:/Program Files/SkeletonToChange/rc"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/rc.com"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/rc.exe"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/rc"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/rc.com"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/rc.exe"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/rc"
+      - "C:/Program Files (x86)/SkeletonToChange/rc.com"
+      - "C:/Program Files (x86)/SkeletonToChange/rc.exe"
+      - "C:/Program Files (x86)/SkeletonToChange/rc"
     found: false
     search_context:
       ENV{PATH}:
@@ -972,14 +960,12 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
-      CMAKE_INSTALL_PREFIX: "C:/Program Files/SkeletonToChange"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_PREFIX_PATH:
         - "C:/Program Files"
         - "C:/Program Files (x86)"
         - "C:/Program Files/CMake"
-        - "C:/Program Files/SkeletonToChange"
+        - "C:/Program Files (x86)/SkeletonToChange"
   -
     kind: "try_compile-v1"
     backtrace:
@@ -989,8 +975,8 @@ events:
     checks:
       - "Detecting CXX compiler ABI info"
     directories:
-      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gxkon6"
-      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gxkon6"
+      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-8hxnt8"
+      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-8hxnt8"
     cmakeVariables:
       CMAKE_CXX_FLAGS: "/DWIN32 /D_WINDOWS /EHsc"
       CMAKE_CXX_FLAGS_DEBUG: "/Zi /Ob0 /Od /RTC1"
@@ -1001,39 +987,39 @@ events:
       variable: "CMAKE_CXX_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gxkon6'
+        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-8hxnt8'
         
-        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_5f7fc.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
-        MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 18.06.2026 17:19:58.
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_4d875.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=18.0 /v:n
+        MSBuild version 18.0.5+e22287bf1 for .NET Framework
+        Build started 24.06.2026 17:34:20.
         
-        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gxkon6\\cmTC_5f7fc.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-8hxnt8\\cmTC_4d875.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gxkon6\\Debug\\".
-          Creating directory "cmTC_5f7fc.dir\\Debug\\cmTC_5f7fc.tlog\\".
+          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-8hxnt8\\Debug\\".
+          Creating directory "cmTC_4d875.dir\\Debug\\cmTC_4d875.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_5f7fc.dir\\Debug\\cmTC_5f7fc.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_5f7fc.dir\\Debug\\cmTC_5f7fc.tlog\\unsuccessfulbuild".
+          Creating "cmTC_4d875.dir\\Debug\\cmTC_4d875.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_4d875.dir\\Debug\\cmTC_4d875.tlog\\unsuccessfulbuild".
         ClCompile:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_5f7fc.dir\\Debug\\\\" /Fd"cmTC_5f7fc.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
-          Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_4d875.dir\\Debug\\\\" /Fd"cmTC_4d875.dir\\Debug\\vc145.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35723 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_5f7fc.dir\\Debug\\\\" /Fd"cmTC_5f7fc.dir\\Debug\\vc143.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /EHsc /RTC1 /MDd /Fo"cmTC_4d875.dir\\Debug\\\\" /Fd"cmTC_4d875.dir\\Debug\\vc145.pdb" /external:W1 /TP /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCXXCompilerABI.cpp"
           CMakeCXXCompilerABI.cpp
         Link:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gxkon6\\Debug\\cmTC_5f7fc.exe" /INCREMENTAL /ILK:"cmTC_5f7fc.dir\\Debug\\cmTC_5f7fc.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gxkon6/Debug/cmTC_5f7fc.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gxkon6/Debug/cmTC_5f7fc.lib" /MACHINE:X64  /machine:x64 cmTC_5f7fc.dir\\Debug\\CMakeCXXCompilerABI.obj
-          cmTC_5f7fc.vcxproj -> C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gxkon6\\Debug\\cmTC_5f7fc.exe
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-8hxnt8\\Debug\\cmTC_4d875.exe" /INCREMENTAL /ILK:"cmTC_4d875.dir\\Debug\\cmTC_4d875.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-8hxnt8/Debug/cmTC_4d875.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-8hxnt8/Debug/cmTC_4d875.lib" /MACHINE:X64  /machine:x64 cmTC_4d875.dir\\Debug\\CMakeCXXCompilerABI.obj
+          cmTC_4d875.vcxproj -> C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-8hxnt8\\Debug\\cmTC_4d875.exe
         FinalizeBuildStatus:
-          Deleting file "cmTC_5f7fc.dir\\Debug\\cmTC_5f7fc.tlog\\unsuccessfulbuild".
-          Touching "cmTC_5f7fc.dir\\Debug\\cmTC_5f7fc.tlog\\cmTC_5f7fc.lastbuildstate".
-        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gxkon6\\cmTC_5f7fc.vcxproj" (default targets).
+          Deleting file "cmTC_4d875.dir\\Debug\\cmTC_4d875.tlog\\unsuccessfulbuild".
+          Touching "cmTC_4d875.dir\\Debug\\cmTC_4d875.tlog\\cmTC_4d875.lastbuildstate".
+        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-8hxnt8\\cmTC_4d875.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:01.42
+        Time Elapsed 00:00:00.93
         
       exitCode: 0
   -
@@ -1046,7 +1032,7 @@ events:
       Parsed CXX implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
-        linker tool for 'CXX': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe
+        linker tool for 'CXX': C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/HostX64/x64/link.exe
         implicit libs: []
         implicit objs: []
         implicit dirs: []
@@ -1061,14 +1047,14 @@ events:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "CMakeLists.txt:3 (project)"
     message: |
-      Running the CXX compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe" "-v"
-      Microsoft (R) Incremental Linker Version 14.44.35228.0
+      Running the CXX compiler's linker: "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.50.35723.0
       Copyright (C) Microsoft Corporation.  All rights reserved.
   -
     kind: "find-v1"
     backtrace:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindVulkan.cmake:409 (find_path)"
-      - "CMakeLists.txt:24 (find_package)"
+      - "CMakeLists.txt:26 (find_package)"
     mode: "path"
     variable: "Vulkan_INCLUDE_DIR"
     description: "Path to a file."
@@ -1117,8 +1103,8 @@ events:
       - "C:/Program Files (x86)/"
       - "C:/Program Files/CMake/include/"
       - "C:/Program Files/CMake/"
-      - "C:/Program Files/SkeletonToChange/include/"
-      - "C:/Program Files/SkeletonToChange/"
+      - "C:/Program Files (x86)/SkeletonToChange/include/"
+      - "C:/Program Files (x86)/SkeletonToChange/"
     found: "C:/VulkanSDK/1.4.341.1/include/"
     search_context:
       ENV{PATH}:
@@ -1160,19 +1146,17 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
-      CMAKE_INSTALL_PREFIX: "C:/Program Files/SkeletonToChange"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_PREFIX_PATH:
         - "C:/Program Files"
         - "C:/Program Files (x86)"
         - "C:/Program Files/CMake"
-        - "C:/Program Files/SkeletonToChange"
+        - "C:/Program Files (x86)/SkeletonToChange"
   -
     kind: "find-v1"
     backtrace:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindVulkan.cmake:416 (find_library)"
-      - "CMakeLists.txt:24 (find_package)"
+      - "CMakeLists.txt:26 (find_package)"
     mode: "library"
     variable: "Vulkan_LIBRARY"
     description: "Path to a library."
@@ -1221,9 +1205,9 @@ events:
       - "C:/Program Files (x86)/"
       - "C:/Program Files/CMake/lib/"
       - "C:/Program Files/CMake/"
-      - "C:/Program Files/SkeletonToChange/lib/"
-      - "C:/Program Files/SkeletonToChange/"
-      - "C:/Program Files/SkeletonToChange/bin/"
+      - "C:/Program Files (x86)/SkeletonToChange/lib/"
+      - "C:/Program Files (x86)/SkeletonToChange/"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/"
       - "/bin/"
     found: "C:/VulkanSDK/1.4.341.1/Lib/vulkan-1.lib"
     search_context:
@@ -1266,23 +1250,21 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
-      CMAKE_INSTALL_PREFIX: "C:/Program Files/SkeletonToChange"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_PREFIX_PATH:
         - "C:/Program Files"
         - "C:/Program Files (x86)"
         - "C:/Program Files/CMake"
-        - "C:/Program Files/SkeletonToChange"
+        - "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_LIBRARY_PATH:
-        - "C:/Program Files/SkeletonToChange/bin"
+        - "C:/Program Files (x86)/SkeletonToChange/bin"
         - "C:/Program Files/CMake/bin"
         - "/bin"
   -
     kind: "find-v1"
     backtrace:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindVulkan.cmake:424 (find_program)"
-      - "CMakeLists.txt:24 (find_package)"
+      - "CMakeLists.txt:26 (find_package)"
     mode: "program"
     variable: "Vulkan_GLSLC_EXECUTABLE"
     description: "Path to a program."
@@ -1334,9 +1316,9 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files/CMake/sbin/"
       - "C:/Program Files/CMake/"
-      - "C:/Program Files/SkeletonToChange/bin/"
-      - "C:/Program Files/SkeletonToChange/sbin/"
-      - "C:/Program Files/SkeletonToChange/"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/"
+      - "C:/Program Files (x86)/SkeletonToChange/"
     searched_directories:
       - "C:/VulkanSDK/1.4.341.1/bin/glslc.com"
     found: "C:/VulkanSDK/1.4.341.1/Bin/glslc.exe"
@@ -1380,19 +1362,17 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
-      CMAKE_INSTALL_PREFIX: "C:/Program Files/SkeletonToChange"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_PREFIX_PATH:
         - "C:/Program Files"
         - "C:/Program Files (x86)"
         - "C:/Program Files/CMake"
-        - "C:/Program Files/SkeletonToChange"
+        - "C:/Program Files (x86)/SkeletonToChange"
   -
     kind: "find-v1"
     backtrace:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/FindVulkan.cmake:432 (find_program)"
-      - "CMakeLists.txt:24 (find_package)"
+      - "CMakeLists.txt:26 (find_package)"
     mode: "program"
     variable: "Vulkan_GLSLANG_VALIDATOR_EXECUTABLE"
     description: "Path to a program."
@@ -1444,9 +1424,9 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files/CMake/sbin/"
       - "C:/Program Files/CMake/"
-      - "C:/Program Files/SkeletonToChange/bin/"
-      - "C:/Program Files/SkeletonToChange/sbin/"
-      - "C:/Program Files/SkeletonToChange/"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/"
+      - "C:/Program Files (x86)/SkeletonToChange/"
     searched_directories:
       - "C:/VulkanSDK/1.4.341.1/bin/glslangValidator.com"
     found: "C:/VulkanSDK/1.4.341.1/Bin/glslangValidator.exe"
@@ -1490,14 +1470,12 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
-      CMAKE_INSTALL_PREFIX: "C:/Program Files/SkeletonToChange"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_PREFIX_PATH:
         - "C:/Program Files"
         - "C:/Program Files (x86)"
         - "C:/Program Files/CMake"
-        - "C:/Program Files/SkeletonToChange"
+        - "C:/Program Files (x86)/SkeletonToChange"
   -
     kind: "find-v1"
     backtrace:
@@ -1507,7 +1485,7 @@ events:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/FetchContent.cmake:2158:EVAL:2 (__FetchContent_doPopulation)"
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/FetchContent.cmake:2158 (cmake_language)"
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/FetchContent.cmake:2399 (__FetchContent_Populate)"
-      - "CMakeLists.txt:43 (FetchContent_MakeAvailable)"
+      - "CMakeLists.txt:45 (FetchContent_MakeAvailable)"
     mode: "program"
     variable: "GIT_EXECUTABLE"
     description: "Git command line client"
@@ -1559,9 +1537,9 @@ events:
       - "C:/Program Files/CMake/bin/"
       - "C:/Program Files/CMake/sbin/"
       - "C:/Program Files/CMake/"
-      - "C:/Program Files/SkeletonToChange/bin/"
-      - "C:/Program Files/SkeletonToChange/sbin/"
-      - "C:/Program Files/SkeletonToChange/"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/"
+      - "C:/Program Files (x86)/SkeletonToChange/"
       - "C:/Users/marcu/AppData/Local/Atlassian/SourceTree/git_local/bin/"
     searched_directories:
       - "C:/VulkanSDK/1.4.341.1/Bin/git.cmd.com"
@@ -1672,15 +1650,15 @@ events:
       - "C:/Program Files/CMake/git.cmd.com"
       - "C:/Program Files/CMake/git.cmd.exe"
       - "C:/Program Files/CMake/git.cmd"
-      - "C:/Program Files/SkeletonToChange/bin/git.cmd.com"
-      - "C:/Program Files/SkeletonToChange/bin/git.cmd.exe"
-      - "C:/Program Files/SkeletonToChange/bin/git.cmd"
-      - "C:/Program Files/SkeletonToChange/sbin/git.cmd.com"
-      - "C:/Program Files/SkeletonToChange/sbin/git.cmd.exe"
-      - "C:/Program Files/SkeletonToChange/sbin/git.cmd"
-      - "C:/Program Files/SkeletonToChange/git.cmd.com"
-      - "C:/Program Files/SkeletonToChange/git.cmd.exe"
-      - "C:/Program Files/SkeletonToChange/git.cmd"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/git.cmd.com"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/git.cmd.exe"
+      - "C:/Program Files (x86)/SkeletonToChange/bin/git.cmd"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/git.cmd.com"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/git.cmd.exe"
+      - "C:/Program Files (x86)/SkeletonToChange/sbin/git.cmd"
+      - "C:/Program Files (x86)/SkeletonToChange/git.cmd.com"
+      - "C:/Program Files (x86)/SkeletonToChange/git.cmd.exe"
+      - "C:/Program Files (x86)/SkeletonToChange/git.cmd"
       - "C:/Users/marcu/AppData/Local/Atlassian/SourceTree/git_local/bin/git.cmd.com"
       - "C:/Users/marcu/AppData/Local/Atlassian/SourceTree/git_local/bin/git.cmd.exe"
       - "C:/Users/marcu/AppData/Local/Atlassian/SourceTree/git_local/bin/git.cmd"
@@ -1759,14 +1737,12 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
-      CMAKE_INSTALL_PREFIX: "C:/Program Files/SkeletonToChange"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_PREFIX_PATH:
         - "C:/Program Files"
         - "C:/Program Files (x86)"
         - "C:/Program Files/CMake"
-        - "C:/Program Files/SkeletonToChange"
+        - "C:/Program Files (x86)/SkeletonToChange"
   -
     kind: "find-v1"
     backtrace:
@@ -1832,14 +1808,12 @@ events:
         - "C:\\Users\\marcu\\Documents\\Mobile application\\flutter\\bin"
         - "C:\\Users\\marcu\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
         - "C:\\Users\\marcu\\.platformio\\penv\\Scripts"
-        - "C:\\VulkanSDK\\1.4.341.1\\Bin"
-        - "C:\\Program Files\\CMake\\bin"
-      CMAKE_INSTALL_PREFIX: "C:/Program Files/SkeletonToChange"
+      CMAKE_INSTALL_PREFIX: "C:/Program Files (x86)/SkeletonToChange"
       CMAKE_SYSTEM_PREFIX_PATH:
         - "C:/Program Files"
         - "C:/Program Files (x86)"
         - "C:/Program Files/CMake"
-        - "C:/Program Files/SkeletonToChange"
+        - "C:/Program Files (x86)/SkeletonToChange"
   -
     kind: "message-v1"
     backtrace:
@@ -1855,8 +1829,8 @@ events:
       
       The output was:
       0
-      MSBuild version 17.14.40+3e7442088 for .NET Framework
-      Build started 18.06.2026 17:20:08.
+      MSBuild version 18.0.5+e22287bf1 for .NET Framework
+      Build started 24.06.2026 17:34:29.
       
       Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\4.3.3\\CompilerIdC\\CompilerIdC.vcxproj" on node 1 (default targets).
       PrepareForBuild:
@@ -1867,15 +1841,15 @@ events:
         Creating "Debug\\CompilerIdC.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
         Touching "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
       ClCompile:
-        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc143.pdb" /external:W0 /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
+        C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\CL.exe /c /nologo /W0 /WX- /diagnostics:column /Od /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\\\" /Fd"Debug\\vc145.pdb" /external:W0 /Gd /TC /FC /errorReport:queue CMakeCCompilerId.c
         CMakeCCompilerId.c
       Link:
-        C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
+        C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\link.exe /ERRORREPORT:QUEUE /OUT:".\\CompilerIdC.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:".\\CompilerIdC.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\\CompilerIdC.lib" /MACHINE:X64 Debug\\CMakeCCompilerId.obj
         CompilerIdC.vcxproj -> C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\4.3.3\\CompilerIdC\\CompilerIdC.exe
       PostBuildEvent:
         for %%i in (cl.exe) do @echo CMAKE_C_COMPILER=%%~$PATH:i
         :VCEnd
-        CMAKE_C_COMPILER=C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\Hostx64\\x64\\cl.exe
+        CMAKE_C_COMPILER=C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\Hostx64\\x64\\cl.exe
       FinalizeBuildStatus:
         Deleting file "Debug\\CompilerIdC.tlog\\unsuccessfulbuild".
         Touching "Debug\\CompilerIdC.tlog\\CompilerIdC.lastbuildstate".
@@ -1885,7 +1859,7 @@ events:
           0 Warning(s)
           0 Error(s)
       
-      Time Elapsed 00:00:01.41
+      Time Elapsed 00:00:00.94
       
       
       Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CompilerIdC.exe"
@@ -1904,8 +1878,8 @@ events:
     checks:
       - "Detecting C compiler ABI info"
     directories:
-      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-h388wc"
-      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-h388wc"
+      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gtm676"
+      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gtm676"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
@@ -1915,39 +1889,39 @@ events:
       variable: "CMAKE_C_ABI_COMPILED"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-h388wc'
+        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gtm676'
         
-        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_0378b.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
-        MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 18.06.2026 17:20:10.
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_f1690.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=18.0 /v:n
+        MSBuild version 18.0.5+e22287bf1 for .NET Framework
+        Build started 24.06.2026 17:34:30.
         
-        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h388wc\\cmTC_0378b.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gtm676\\cmTC_f1690.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h388wc\\Debug\\".
-          Creating directory "cmTC_0378b.dir\\Debug\\cmTC_0378b.tlog\\".
+          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gtm676\\Debug\\".
+          Creating directory "cmTC_f1690.dir\\Debug\\cmTC_f1690.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_0378b.dir\\Debug\\cmTC_0378b.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_0378b.dir\\Debug\\cmTC_0378b.tlog\\unsuccessfulbuild".
+          Creating "cmTC_f1690.dir\\Debug\\cmTC_f1690.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_f1690.dir\\Debug\\cmTC_f1690.tlog\\unsuccessfulbuild".
         ClCompile:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_0378b.dir\\Debug\\\\" /Fd"cmTC_0378b.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
-          Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_f1690.dir\\Debug\\\\" /Fd"cmTC_f1690.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35723 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_0378b.dir\\Debug\\\\" /Fd"cmTC_0378b.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_f1690.dir\\Debug\\\\" /Fd"cmTC_f1690.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Program Files\\CMake\\share\\cmake-4.3\\Modules\\CMakeCCompilerABI.c"
           CMakeCCompilerABI.c
         Link:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h388wc\\Debug\\cmTC_0378b.exe" /INCREMENTAL /ILK:"cmTC_0378b.dir\\Debug\\cmTC_0378b.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-h388wc/Debug/cmTC_0378b.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-h388wc/Debug/cmTC_0378b.lib" /MACHINE:X64  /machine:x64 cmTC_0378b.dir\\Debug\\CMakeCCompilerABI.obj
-          cmTC_0378b.vcxproj -> C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h388wc\\Debug\\cmTC_0378b.exe
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gtm676\\Debug\\cmTC_f1690.exe" /INCREMENTAL /ILK:"cmTC_f1690.dir\\Debug\\cmTC_f1690.ilk" /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gtm676/Debug/cmTC_f1690.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-gtm676/Debug/cmTC_f1690.lib" /MACHINE:X64  /machine:x64 cmTC_f1690.dir\\Debug\\CMakeCCompilerABI.obj
+          cmTC_f1690.vcxproj -> C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gtm676\\Debug\\cmTC_f1690.exe
         FinalizeBuildStatus:
-          Deleting file "cmTC_0378b.dir\\Debug\\cmTC_0378b.tlog\\unsuccessfulbuild".
-          Touching "cmTC_0378b.dir\\Debug\\cmTC_0378b.tlog\\cmTC_0378b.lastbuildstate".
-        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-h388wc\\cmTC_0378b.vcxproj" (default targets).
+          Deleting file "cmTC_f1690.dir\\Debug\\cmTC_f1690.tlog\\unsuccessfulbuild".
+          Touching "cmTC_f1690.dir\\Debug\\cmTC_f1690.tlog\\cmTC_f1690.lastbuildstate".
+        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-gtm676\\cmTC_f1690.vcxproj" (default targets).
         
         Build succeeded.
             0 Warning(s)
             0 Error(s)
         
-        Time Elapsed 00:00:01.39
+        Time Elapsed 00:00:00.89
         
       exitCode: 0
   -
@@ -1960,7 +1934,7 @@ events:
       Parsed C implicit link information:
         link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
         linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|link\\.exe|lld-link(\\.exe)?))("|,| |$)]
-        linker tool for 'C': C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe
+        linker tool for 'C': C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/HostX64/x64/link.exe
         implicit libs: []
         implicit objs: []
         implicit dirs: []
@@ -1975,8 +1949,8 @@ events:
       - "C:/Program Files/CMake/share/cmake-4.3/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
       - "build/_deps/glfw-src/CMakeLists.txt:3 (project)"
     message: |
-      Running the C compiler's linker: "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.44.35207/bin/HostX64/x64/link.exe" "-v"
-      Microsoft (R) Incremental Linker Version 14.44.35228.0
+      Running the C compiler's linker: "C:/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/MSVC/14.50.35717/bin/HostX64/x64/link.exe" "-v"
+      Microsoft (R) Incremental Linker Version 14.50.35723.0
       Copyright (C) Microsoft Corporation.  All rights reserved.
   -
     kind: "try_compile-v1"
@@ -1989,8 +1963,8 @@ events:
     checks:
       - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
     directories:
-      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-t61pjq"
-      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-t61pjq"
+      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-eok2fy"
+      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-eok2fy"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
@@ -2001,39 +1975,39 @@ events:
       variable: "CMAKE_HAVE_LIBC_PTHREAD"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-t61pjq'
+        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-eok2fy'
         
-        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_28f46.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
-        MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 18.06.2026 17:20:12.
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_001cf.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=18.0 /v:n
+        MSBuild version 18.0.5+e22287bf1 for .NET Framework
+        Build started 24.06.2026 17:34:32.
         
-        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\cmTC_28f46.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\cmTC_001cf.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\Debug\\".
-          Creating directory "cmTC_28f46.dir\\Debug\\cmTC_28f46.tlog\\".
+          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\Debug\\".
+          Creating directory "cmTC_001cf.dir\\Debug\\cmTC_001cf.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_28f46.dir\\Debug\\cmTC_28f46.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_28f46.dir\\Debug\\cmTC_28f46.tlog\\unsuccessfulbuild".
+          Creating "cmTC_001cf.dir\\Debug\\cmTC_001cf.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_001cf.dir\\Debug\\cmTC_001cf.tlog\\unsuccessfulbuild".
         ClCompile:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_28f46.dir\\Debug\\\\" /Fd"cmTC_28f46.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\src.c"
-          Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_001cf.dir\\Debug\\\\" /Fd"cmTC_001cf.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\src.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35723 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_28f46.dir\\Debug\\\\" /Fd"cmTC_28f46.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\src.c"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CMAKE_HAVE_LIBC_PTHREAD /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_001cf.dir\\Debug\\\\" /Fd"cmTC_001cf.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\src.c"
           src.c
-        C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\cmTC_28f46.vcxproj]
-        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\cmTC_28f46.vcxproj" (default targets) -- FAILED.
+        C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\cmTC_001cf.vcxproj]
+        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\cmTC_001cf.vcxproj" (default targets) -- FAILED.
         
         Build FAILED.
         
-        "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\cmTC_28f46.vcxproj" (default target) (1) ->
+        "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\cmTC_001cf.vcxproj" (default target) (1) ->
         (ClCompile target) -> 
-          C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-t61pjq\\cmTC_28f46.vcxproj]
+          C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\src.c(1,10): error C1083: Cannot open include file: 'pthread.h': No such file or directory [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-eok2fy\\cmTC_001cf.vcxproj]
         
             0 Warning(s)
             1 Error(s)
         
-        Time Elapsed 00:00:01.18
+        Time Elapsed 00:00:00.55
         
       exitCode: 1
   -
@@ -2046,8 +2020,8 @@ events:
     checks:
       - "Looking for pthread_create in pthreads"
     directories:
-      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-ltyg93"
-      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-ltyg93"
+      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-1ftlqz"
+      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-1ftlqz"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
@@ -2058,41 +2032,41 @@ events:
       variable: "CMAKE_HAVE_PTHREADS_CREATE"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-ltyg93'
+        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-1ftlqz'
         
-        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_7f91d.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
-        MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 18.06.2026 17:20:13.
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_f8a08.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=18.0 /v:n
+        MSBuild version 18.0.5+e22287bf1 for .NET Framework
+        Build started 24.06.2026 17:34:33.
         
-        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\cmTC_7f91d.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\cmTC_f8a08.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\Debug\\".
-          Creating directory "cmTC_7f91d.dir\\Debug\\cmTC_7f91d.tlog\\".
+          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\Debug\\".
+          Creating directory "cmTC_f8a08.dir\\Debug\\cmTC_f8a08.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_7f91d.dir\\Debug\\cmTC_7f91d.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_7f91d.dir\\Debug\\cmTC_7f91d.tlog\\unsuccessfulbuild".
+          Creating "cmTC_f8a08.dir\\Debug\\cmTC_f8a08.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_f8a08.dir\\Debug\\cmTC_f8a08.tlog\\unsuccessfulbuild".
         ClCompile:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_7f91d.dir\\Debug\\\\" /Fd"cmTC_7f91d.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\CheckFunctionExists.c"
-          Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_f8a08.dir\\Debug\\\\" /Fd"cmTC_f8a08.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\CheckFunctionExists.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35723 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_7f91d.dir\\Debug\\\\" /Fd"cmTC_7f91d.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\CheckFunctionExists.c"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_f8a08.dir\\Debug\\\\" /Fd"cmTC_f8a08.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\CheckFunctionExists.c"
           CheckFunctionExists.c
         Link:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\Debug\\cmTC_7f91d.exe" /INCREMENTAL /ILK:"cmTC_7f91d.dir\\Debug\\cmTC_7f91d.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-ltyg93/Debug/cmTC_7f91d.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-ltyg93/Debug/cmTC_7f91d.lib" /MACHINE:X64  /machine:x64 cmTC_7f91d.dir\\Debug\\CheckFunctionExists.obj
-        LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\cmTC_7f91d.vcxproj]
-        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\cmTC_7f91d.vcxproj" (default targets) -- FAILED.
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\Debug\\cmTC_f8a08.exe" /INCREMENTAL /ILK:"cmTC_f8a08.dir\\Debug\\cmTC_f8a08.ilk" /NOLOGO pthreads.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-1ftlqz/Debug/cmTC_f8a08.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-1ftlqz/Debug/cmTC_f8a08.lib" /MACHINE:X64  /machine:x64 cmTC_f8a08.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\cmTC_f8a08.vcxproj]
+        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\cmTC_f8a08.vcxproj" (default targets) -- FAILED.
         
         Build FAILED.
         
-        "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\cmTC_7f91d.vcxproj" (default target) (1) ->
+        "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\cmTC_f8a08.vcxproj" (default target) (1) ->
         (Link target) -> 
-          LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-ltyg93\\cmTC_7f91d.vcxproj]
+          LINK : fatal error LNK1104: cannot open file 'pthreads.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-1ftlqz\\cmTC_f8a08.vcxproj]
         
             0 Warning(s)
             1 Error(s)
         
-        Time Elapsed 00:00:01.21
+        Time Elapsed 00:00:00.72
         
       exitCode: 1
   -
@@ -2105,8 +2079,8 @@ events:
     checks:
       - "Looking for pthread_create in pthread"
     directories:
-      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-rv6a09"
-      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-rv6a09"
+      source: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-iubmjw"
+      binary: "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-iubmjw"
     cmakeVariables:
       CMAKE_CXX_STDLIB_MODULES_JSON: ""
       CMAKE_C_FLAGS: "/DWIN32 /D_WINDOWS"
@@ -2117,41 +2091,41 @@ events:
       variable: "CMAKE_HAVE_PTHREAD_CREATE"
       cached: true
       stdout: |
-        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-rv6a09'
+        Change Dir: 'C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-iubmjw'
         
-        Run Build Command(s): "C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_9c51d.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=17.0 /v:n
-        MSBuild version 17.14.40+3e7442088 for .NET Framework
-        Build started 18.06.2026 17:20:15.
+        Run Build Command(s): "C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/amd64/MSBuild.exe" cmTC_f7302.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:VisualStudioVersion=18.0 /v:n
+        MSBuild version 18.0.5+e22287bf1 for .NET Framework
+        Build started 24.06.2026 17:34:34.
         
-        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\cmTC_9c51d.vcxproj" on node 1 (default targets).
+        Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\cmTC_f7302.vcxproj" on node 1 (default targets).
         PrepareForBuild:
           Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output for more details.
-          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\Debug\\".
-          Creating directory "cmTC_9c51d.dir\\Debug\\cmTC_9c51d.tlog\\".
+          Creating directory "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\Debug\\".
+          Creating directory "cmTC_f7302.dir\\Debug\\cmTC_f7302.tlog\\".
         InitializeBuildStatus:
-          Creating "cmTC_9c51d.dir\\Debug\\cmTC_9c51d.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
-          Touching "cmTC_9c51d.dir\\Debug\\cmTC_9c51d.tlog\\unsuccessfulbuild".
+          Creating "cmTC_f7302.dir\\Debug\\cmTC_f7302.tlog\\unsuccessfulbuild" because "AlwaysCreate" was specified.
+          Touching "cmTC_f7302.dir\\Debug\\cmTC_f7302.tlog\\unsuccessfulbuild".
         ClCompile:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_9c51d.dir\\Debug\\\\" /Fd"cmTC_9c51d.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\CheckFunctionExists.c"
-          Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35228 for x64
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\CL.exe /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_f7302.dir\\Debug\\\\" /Fd"cmTC_f7302.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\CheckFunctionExists.c"
+          Microsoft (R) C/C++ Optimizing Compiler Version 19.50.35723 for x64
           Copyright (C) Microsoft Corporation.  All rights reserved.
-          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_9c51d.dir\\Debug\\\\" /Fd"cmTC_9c51d.dir\\Debug\\vc143.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\CheckFunctionExists.c"
+          cl /c /Zi /W1 /WX- /diagnostics:column /Od /Ob0 /D _MBCS /D WIN32 /D _WINDOWS /D CHECK_FUNCTION_EXISTS=pthread_create /D _MBCS /D "CMAKE_INTDIR=\\"Debug\\"" /RTC1 /MDd /Fo"cmTC_f7302.dir\\Debug\\\\" /Fd"cmTC_f7302.dir\\Debug\\vc145.pdb" /external:W1 /TC /errorReport:queue "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\CheckFunctionExists.c"
           CheckFunctionExists.c
         Link:
-          C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\VC\\Tools\\MSVC\\14.44.35207\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\Debug\\cmTC_9c51d.exe" /INCREMENTAL /ILK:"cmTC_9c51d.dir\\Debug\\cmTC_9c51d.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-rv6a09/Debug/cmTC_9c51d.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-rv6a09/Debug/cmTC_9c51d.lib" /MACHINE:X64  /machine:x64 cmTC_9c51d.dir\\Debug\\CheckFunctionExists.obj
-        LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\cmTC_9c51d.vcxproj]
-        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\cmTC_9c51d.vcxproj" (default targets) -- FAILED.
+          C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.50.35717\\bin\\HostX64\\x64\\link.exe /OUT:"C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\Debug\\cmTC_f7302.exe" /INCREMENTAL /ILK:"cmTC_f7302.dir\\Debug\\cmTC_f7302.ilk" /NOLOGO pthread.lib kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-iubmjw/Debug/cmTC_f7302.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /IMPLIB:"C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CMakeScratch/TryCompile-iubmjw/Debug/cmTC_f7302.lib" /MACHINE:X64  /machine:x64 cmTC_f7302.dir\\Debug\\CheckFunctionExists.obj
+        LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\cmTC_f7302.vcxproj]
+        Done Building Project "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\cmTC_f7302.vcxproj" (default targets) -- FAILED.
         
         Build FAILED.
         
-        "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\cmTC_9c51d.vcxproj" (default target) (1) ->
+        "C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\cmTC_f7302.vcxproj" (default target) (1) ->
         (Link target) -> 
-          LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-rv6a09\\cmTC_9c51d.vcxproj]
+          LINK : fatal error LNK1104: cannot open file 'pthread.lib' [C:\\Users\\marcu\\CLionProjects\\rpchess\\Skeleton2026-distribution 2\\build\\CMakeFiles\\CMakeScratch\\TryCompile-iubmjw\\cmTC_f7302.vcxproj]
         
             0 Warning(s)
             1 Error(s)
         
-        Time Elapsed 00:00:01.26
+        Time Elapsed 00:00:00.71
         
       exitCode: 1
 ...

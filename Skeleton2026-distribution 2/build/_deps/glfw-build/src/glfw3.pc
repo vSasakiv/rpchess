@@ -1,7 +1,7 @@
-prefix=C:/Program Files/SkeletonToChange
+prefix=C:/Program Files (x86)/SkeletonToChange
 exec_prefix=${prefix}
-includedir=C:/Program Files/SkeletonToChange/include
-libdir=C:/Program Files/SkeletonToChange/lib
+includedir=C:/Program Files (x86)/SkeletonToChange/include
+libdir=C:/Program Files (x86)/SkeletonToChange/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input

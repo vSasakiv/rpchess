@@ -1,5 +1,6 @@
 C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/SkeletonToChange.dir
 C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/shaders.dir
+C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/CopySceneAssets.dir
 C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/ALL_BUILD.dir
 C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/CMakeFiles/ZERO_CHECK.dir
 C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/build/_deps/glfw-build/CMakeFiles/ALL_BUILD.dir

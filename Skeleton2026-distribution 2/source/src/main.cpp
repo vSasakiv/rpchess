@@ -6,6 +6,7 @@
 
 #include "../include/json.hpp"
 #include "../include/modules/Starter.hpp"
+#include <glm/ext/matrix_clip_space.hpp>
 #include "../include/modules/TextMaker.hpp"
 #include "../include/modules/Scene.hpp"
 
@@ -109,12 +110,30 @@ protected:
     static constexpr int TOKEN_INSTANCE_INDEX = 2;
     static constexpr int DIE_1_INSTANCE_INDEX = 5;
     static constexpr int DIE_2_INSTANCE_INDEX = 6;
+    static constexpr int LAMP_POST_INSTANCE_INDEX = 7;
+    static constexpr int LAMP_BULB_INSTANCE_INDEX = 8;
 
     int tokenRow = 6;
     int tokenCol = 1;
 
     float moveCooldown = 0.0f;
 
+
+
+    enum class ControlMode {
+        Token,
+        Lamp
+    };
+
+    ControlMode controlMode = ControlMode::Token;
+
+    float modeSwitchCooldown = 0.0f;
+
+    // The visible lamp bulb and the actual shader light source use this same position.
+    // This keeps the rendered lamp and the shadows consistent.
+    glm::vec3 lampWorldPosition = glm::vec3(4.7f, 2.2f, -4.7f);
+
+    float lampMoveSpeed = 2.2f;
 
     // -------------------------------
     // Dice and movement-point state
@@ -126,27 +145,67 @@ protected:
     int die1Value = 1;
     int die2Value = 1;
 
-    float die1Spin = 0.0f;
-    float die2Spin = 0.0f;
-
     int movementPoints = 0;
 
-    // Where the dice start when thrown
-    glm::vec3 die1StartPosition = glm::vec3(-3.2f, 0.35f, -2.6f);
-    glm::vec3 die2StartPosition = glm::vec3(-2.5f, 0.35f, -2.6f);
+    // Board/token height is around y = 0.38 in this scene.
+    // The dice collision uses the center of the die, so the center must be ABOVE the board.
+    // We use a slightly conservative height because the die rotates and its corners need clearance.
+    static constexpr float DICE_BOARD_Y = 0.38f;
+    static constexpr float DICE_REST_Y = 0.48f;
 
-    glm::vec3 die1LandPosition = glm::vec3(-2.8f, 0.35f, -2.2f);
-    glm::vec3 die2LandPosition = glm::vec3(-2.2f, 0.35f, -2.2f);
+    static constexpr float DICE_GRAVITY = -8.8f;
+
+    // Higher bounce factor = the dice keep more energy after impact.
+    // This makes the roll last longer.
+    static constexpr float DICE_BOUNCE_FACTOR = 0.58f;
+
+    // Higher value means less energy loss when sliding on the board.
+    static constexpr float DICE_FRICTION = 0.88f;
+
+    // Air drag close to 1.0 means slower loss of horizontal velocity.
+    static constexpr float DICE_AIR_DRAG = 0.993f;
+
+    // Higher value means spin dies more slowly.
+    static constexpr float DICE_ANGULAR_DAMPING = 0.84f;
+
+    // Approximate collision radius for each die.
+    // The dice are rendered as cubes, but collision is simplified as circle collision in XZ.
+    static constexpr float DICE_COLLISION_RADIUS = 0.42f;
+
+    // Bounciness when the two dice collide with each other.
+    static constexpr float DICE_DICE_RESTITUTION = 0.65f;
+
+    // Dice movement bounds on/near the board.
+    static constexpr float DICE_MIN_X = -3.55f;
+    static constexpr float DICE_MAX_X = 3.55f;
+    static constexpr float DICE_MIN_Z = -3.55f;
+    static constexpr float DICE_MAX_Z = 3.55f;
+
+    glm::vec3 die1Position = glm::vec3(-3.2f, DICE_REST_Y, -2.6f);
+    glm::vec3 die2Position = glm::vec3(-2.5f, DICE_REST_Y, -2.6f);
+
+    glm::vec3 die1Velocity = glm::vec3(0.0f);
+    glm::vec3 die2Velocity = glm::vec3(0.0f);
+
+    glm::vec3 die1Rotation = glm::vec3(0.0f);
+    glm::vec3 die2Rotation = glm::vec3(0.0f);
+
+    glm::vec3 die1AngularVelocity = glm::vec3(0.0f);
+    glm::vec3 die2AngularVelocity = glm::vec3(0.0f);
+
+    bool die1Sleeping = true;
+    bool die2Sleeping = true;
 
     bool diceRolling = false;
     float diceRollTimer = 0.0f;
-    float diceRollDuration = 1.35f;
+
+    // Safety timeout so the dice never roll forever.
+    float diceRollMaxDuration = 12.0f;
 
     float rollCooldown = 0.0f;
 
     std::mt19937 randomEngine{std::random_device{}()};
     std::uniform_int_distribution<int> diceDistribution{DICE_MIN, DICE_MAX};
-
 
     // -------------------------------
     // Window setup
@@ -439,17 +498,77 @@ protected:
     }
 
 
-    void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
-        // Pass 0: render scene from lamp view into the shadow depth texture.
-        RPshadow.begin(commandBuffer, currentImage);
-        SC.populateCommandBuffer(commandBuffer, 0, currentImage);
-        RPshadow.end(commandBuffer);
+void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
+    // Pass 0:
+    // Render only real shadow casters from the lamp point of view.
+    // Do NOT render the table, board, or lamp into the shadow map.
+    // They should receive shadows, not create giant fake/self shadows.
+    RPshadow.begin(commandBuffer, currentImage);
+    populateShadowCommandBuffer(commandBuffer, currentImage);
+    RPshadow.end(commandBuffer);
 
-        // Pass 1: render scene normally from camera view, sampling the shadow map.
-        RP.begin(commandBuffer, currentImage);
-        SC.populateCommandBuffer(commandBuffer, 1, currentImage);
-        RP.end(commandBuffer);
+    // Pass 1:
+    // Render the normal camera view and sample the shadow map.
+    RP.begin(commandBuffer, currentImage);
+    SC.populateCommandBuffer(commandBuffer, 1, currentImage);
+    RP.end(commandBuffer);
+}
+
+
+bool instanceCastsShadow(int instanceId) const {
+    // Scene instance indices from scene.json:
+    // 0 = table_surface
+    // 1 = game_board
+    // 7 = lamp_post
+    // 8 = lamp_bulb
+    //
+    // These should not be rendered into the shadow map.
+    // The board and table are receivers.
+    // The lamp should not cast a weird lamp-shaped shadow on the board.
+    if (instanceId == 0 || instanceId == 1 || instanceId == 7 || instanceId == 8) {
+        return false;
     }
+
+    return true;
+}
+
+
+void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
+    constexpr int passId = 0;
+
+    for (int techniqueId = 0; techniqueId < SC.TechniqueInstanceCount; techniqueId++) {
+        Pipeline* pipeline = SC.TI[techniqueId].T->PT[passId].P;
+
+        if (pipeline == nullptr) {
+            continue;
+        }
+
+        pipeline->bind(commandBuffer);
+
+        for (int instanceId = 0; instanceId < SC.TI[techniqueId].InstanceCount; instanceId++) {
+            if (!instanceCastsShadow(instanceId)) {
+                continue;
+            }
+
+            Instance& instance = SC.TI[techniqueId].I[instanceId];
+
+            SC.M[instance.Mid]->bind(commandBuffer);
+
+            for (int setId = 0; setId < instance.NDs[passId]; setId++) {
+                instance.DS[passId][setId]->bind(commandBuffer, *pipeline, setId, currentImage);
+            }
+
+            vkCmdDrawIndexed(
+                commandBuffer,
+                static_cast<uint32_t>(SC.M[instance.Mid]->indices.size()),
+                1,
+                0,
+                0,
+                0
+            );
+        }
+    }
+}
 
 
     // -------------------------------
@@ -465,6 +584,7 @@ protected:
 
         updateTokenInstance();
         updateDiceInstances(deltaT);
+        updateLampInstances();
 
         glm::mat4 lightViewProj = computeLightViewProj();
 
@@ -481,8 +601,7 @@ protected:
         // y = shadow strength
         // z = shadow map size
         // w = unused
-        gubo.shadowParams = glm::vec4(0.004f, 0.65f, 2048.0f, 0.0f);
-
+        gubo.shadowParams = glm::vec4(0.0065f, 0.72f, 0.025f, 1.25f);
         UniformBufferObject ubo{};
         ShadowLocalUniformBufferObject slubo{};
 
@@ -531,7 +650,16 @@ protected:
                 oss << "SPACE: roll dice\n";
             }
 
-            oss << "I/J/K/L: move token\n";
+            if (controlMode == ControlMode::Token) {
+                oss << "Mode: TOKEN\n";
+                oss << "TAB: switch to lamp\n";
+                oss << "I/J/K/L: move token\n";
+            } else {
+                oss << "Mode: LAMP\n";
+                oss << "TAB: switch to token\n";
+                oss << "I/K: lamp up/down\n";
+                oss << "J/L: lamp left/right\n";
+            }
 
             txt.print(
                 1.0f, 1.0f,
@@ -556,6 +684,11 @@ protected:
     // Dice logic
     // -------------------------------
 
+    float randomFloat(float minValue, float maxValue) {
+        std::uniform_real_distribution<float> distribution(minValue, maxValue);
+        return distribution(randomEngine);
+    }
+
     void startDiceRoll() {
         if (diceRolling) {
             return;
@@ -564,25 +697,62 @@ protected:
         diceRolling = true;
         diceRollTimer = 0.0f;
 
-        // While rolling, old movement points should not be usable.
+        // Old movement points are removed while rolling.
         movementPoints = 0;
 
-        // Reset spin at the start of each throw.
-        die1Spin = 0.0f;
-        die2Spin = 0.0f;
+        die1Sleeping = false;
+        die2Sleeping = false;
 
-        // Small random variation in landing positions.
-        float offset1X = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
-        float offset1Z = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
+        // Start positions, slightly above the board.
+        die1Position = glm::vec3(-3.1f, DICE_REST_Y + 0.55f, -2.65f);
+        die2Position = glm::vec3(-2.35f, DICE_REST_Y + 0.55f, -2.65f);
 
-        float offset2X = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
-        float offset2Z = (diceDistribution(randomEngine) - 3.5f) * 0.08f;
+        // Initial velocities.
+        // x/z move them across the board, y throws them upward.
+        die1Velocity = glm::vec3(
+            randomFloat(1.3f, 2.0f),
+            randomFloat(3.4f, 4.3f),
+            randomFloat(0.9f, 1.5f)
+        );
 
-        die1LandPosition = glm::vec3(-2.8f + offset1X, 0.35f, -2.2f + offset1Z);
-        die2LandPosition = glm::vec3(-2.2f + offset2X, 0.35f, -2.2f + offset2Z);
+        die2Velocity = glm::vec3(
+            randomFloat(1.1f, 1.9f),
+            randomFloat(3.2f, 4.1f),
+            randomFloat(0.8f, 1.4f)
+        );
 
-        std::cout << "Throwing dice...\n";
+        // Strong random angular velocity makes the dice spin while flying.
+        die1AngularVelocity = glm::vec3(
+            randomFloat(9.0f, 15.0f),
+            randomFloat(12.0f, 20.0f),
+            randomFloat(8.0f, 14.0f)
+        );
+
+        die2AngularVelocity = glm::vec3(
+            randomFloat(-15.0f, -9.0f),
+            randomFloat(11.0f, 19.0f),
+            randomFloat(-14.0f, -8.0f)
+        );
+
+        // Initial rotation starts random so throws do not look identical.
+        die1Rotation = glm::vec3(
+            randomFloat(0.0f, glm::radians(360.0f)),
+            randomFloat(0.0f, glm::radians(360.0f)),
+            randomFloat(0.0f, glm::radians(360.0f))
+        );
+
+        die2Rotation = glm::vec3(
+            randomFloat(0.0f, glm::radians(360.0f)),
+            randomFloat(0.0f, glm::radians(360.0f)),
+            randomFloat(0.0f, glm::radians(360.0f))
+        );
+
+        die1Value = diceDistribution(randomEngine);
+        die2Value = diceDistribution(randomEngine);
+
+        std::cout << "Throwing dice with physics...\n";
     }
+
 
 
     void updateDice(float deltaT) {
@@ -592,27 +762,346 @@ protected:
 
         diceRollTimer += deltaT;
 
-        // Change values while rolling to show activity.
-        die1Value = diceDistribution(randomEngine);
-        die2Value = diceDistribution(randomEngine);
+        updateSingleDiePhysics(
+            die1Position,
+            die1Velocity,
+            die1Rotation,
+            die1AngularVelocity,
+            die1Sleeping,
+            die1Value,
+            deltaT,
+            false
+        );
 
-        if (diceRollTimer >= diceRollDuration) {
-            diceRolling = false;
+        updateSingleDiePhysics(
+            die2Position,
+            die2Velocity,
+            die2Rotation,
+            die2AngularVelocity,
+            die2Sleeping,
+            die2Value,
+            deltaT,
+            true
+        );
+        resolveDiceDiceCollision(deltaT);
+        // If both dice have stopped, the roll is finished.
+        if (die1Sleeping && die2Sleeping) {
+            finishDiceRoll();
+            return;
+        }
 
-            die1Value = diceDistribution(randomEngine);
-            die2Value = diceDistribution(randomEngine);
+        // Safety stop in case numerical damping takes too long.
+        if (diceRollTimer >= diceRollMaxDuration) {
+            forceStopDie(
+                die1Position,
+                die1Velocity,
+                die1Rotation,
+                die1AngularVelocity,
+                die1Sleeping,
+                die1Value,
+                false
+            );
 
-            movementPoints = die1Value + die2Value;
+            forceStopDie(
+                die2Position,
+                die2Velocity,
+                die2Rotation,
+                die2AngularVelocity,
+                die2Sleeping,
+                die2Value,
+                true
+            );
 
-            std::cout
-                << "Dice result: "
-                << die1Value << " + " << die2Value
-                << " = " << movementPoints
-                << " movement points\n";
+            finishDiceRoll();
+        }
+    }
+
+void updateSingleDiePhysics(
+    glm::vec3& position,
+    glm::vec3& velocity,
+    glm::vec3& rotation,
+    glm::vec3& angularVelocity,
+    bool& sleeping,
+    int& value,
+    float deltaT,
+    bool secondDie
+) {
+    if (sleeping) {
+        return;
+    }
+
+    // Gravity affects vertical velocity.
+    velocity.y += DICE_GRAVITY * deltaT;
+
+    // Position changes based on velocity.
+    position += velocity * deltaT;
+
+    // Rotation changes based on angular velocity.
+    rotation += angularVelocity * deltaT;
+
+    // Air drag slowly reduces horizontal movement.
+    float frameDrag = std::pow(DICE_AIR_DRAG, deltaT * 60.0f);
+    velocity.x *= frameDrag;
+    velocity.z *= frameDrag;
+
+    // Keep dice inside the board area.
+    // When they hit the border, they bounce back slightly.
+    if (position.x < DICE_MIN_X) {
+        position.x = DICE_MIN_X;
+        velocity.x = std::abs(velocity.x) * DICE_BOUNCE_FACTOR;
+    }
+
+    if (position.x > DICE_MAX_X) {
+        position.x = DICE_MAX_X;
+        velocity.x = -std::abs(velocity.x) * DICE_BOUNCE_FACTOR;
+    }
+
+    if (position.z < DICE_MIN_Z) {
+        position.z = DICE_MIN_Z;
+        velocity.z = std::abs(velocity.z) * DICE_BOUNCE_FACTOR;
+    }
+
+    if (position.z > DICE_MAX_Z) {
+        position.z = DICE_MAX_Z;
+        velocity.z = -std::abs(velocity.z) * DICE_BOUNCE_FACTOR;
+    }
+
+    // Collision with the board plane.
+   // Collision with the board plane.
+// We clamp the CENTER of the die to DICE_REST_Y.
+// Since DICE_REST_Y is above the board surface, the visible die stays above the board.
+        // Collision with the board plane.
+        // We clamp the CENTER of the die to DICE_REST_Y.
+        // Since DICE_REST_Y is above the board surface, the visible die stays above the board.
+        if (position.y <= DICE_REST_Y) {
+            position.y = DICE_REST_Y;
+
+            if (velocity.y < 0.0f) {
+                // Bounce upward, but lose energy.
+                velocity.y = -velocity.y * DICE_BOUNCE_FACTOR;
+
+                // Contact friction reduces sliding.
+                velocity.x *= DICE_FRICTION;
+                velocity.z *= DICE_FRICTION;
+
+                // Rotational damping reduces spin after each bounce.
+                angularVelocity *= DICE_ANGULAR_DAMPING;
+
+                // Extra damping for small bounces so the die settles instead of jittering.
+                if (velocity.y < 0.32f) {
+                    velocity.y = 0.0f;
+                    angularVelocity *= 0.60f;
+                }
+
+                // Change displayed value on each meaningful bounce.
+                if (velocity.y > 0.35f) {
+                    value = diceDistribution(randomEngine);
+                }
+            }
+        }
+
+    float horizontalSpeed = glm::length(glm::vec2(velocity.x, velocity.z));
+    float angularSpeed = glm::length(angularVelocity);
+
+    bool restingOnBoard = position.y <= DICE_REST_Y + 0.001f;
+    bool movingSlowly = horizontalSpeed < 0.06f && std::abs(velocity.y) < 0.02f;
+    bool spinningSlowly = angularSpeed < 0.20f;
+
+    if (restingOnBoard && movingSlowly && spinningSlowly) {
+        forceStopDie(
+            position,
+            velocity,
+            rotation,
+            angularVelocity,
+            sleeping,
+            value,
+            secondDie
+        );
+    }
+}
+
+    void resolveDiceDiceCollision(float deltaT) {
+    glm::vec3 difference = die2Position - die1Position;
+
+    // We mostly care about collision in the XZ plane because the dice are on the board.
+    glm::vec2 differenceXZ = glm::vec2(difference.x, difference.z);
+
+    float distance = glm::length(differenceXZ);
+    float minimumDistance = DICE_COLLISION_RADIUS * 2.0f;
+
+    // If the dice are exactly on top of each other, choose a safe direction.
+    if (distance < 0.0001f) {
+        differenceXZ = glm::vec2(1.0f, 0.0f);
+        distance = 1.0f;
+    }
+
+    if (distance >= minimumDistance) {
+        return;
+    }
+
+    glm::vec2 normalXZ = differenceXZ / distance;
+
+    float penetration = minimumDistance - distance;
+
+    // Push each die half the penetration distance away from the other.
+    // This removes visual overlap immediately.
+    glm::vec2 correction = normalXZ * (penetration * 0.5f);
+
+    die1Position.x -= correction.x;
+    die1Position.z -= correction.y;
+
+    die2Position.x += correction.x;
+    die2Position.z += correction.y;
+
+    // Keep both dice inside the board after correction.
+    die1Position.x = std::clamp(die1Position.x, DICE_MIN_X, DICE_MAX_X);
+    die1Position.z = std::clamp(die1Position.z, DICE_MIN_Z, DICE_MAX_Z);
+
+    die2Position.x = std::clamp(die2Position.x, DICE_MIN_X, DICE_MAX_X);
+    die2Position.z = std::clamp(die2Position.z, DICE_MIN_Z, DICE_MAX_Z);
+
+    // Relative velocity tells us whether the dice are moving toward each other.
+    glm::vec2 v1 = glm::vec2(die1Velocity.x, die1Velocity.z);
+    glm::vec2 v2 = glm::vec2(die2Velocity.x, die2Velocity.z);
+
+    glm::vec2 relativeVelocity = v2 - v1;
+    float velocityAlongNormal = glm::dot(relativeVelocity, normalXZ);
+
+    // If they are already moving apart, no impulse is needed.
+    if (velocityAlongNormal > 0.0f) {
+        return;
+    }
+
+    // Equal mass collision impulse.
+    // Restitution controls bounciness.
+    float impulseMagnitude =
+        -(1.0f + DICE_DICE_RESTITUTION) * velocityAlongNormal / 2.0f;
+
+    glm::vec2 impulse = impulseMagnitude * normalXZ;
+
+    v1 -= impulse;
+    v2 += impulse;
+
+    die1Velocity.x = v1.x;
+    die1Velocity.z = v1.y;
+
+    die2Velocity.x = v2.x;
+    die2Velocity.z = v2.y;
+
+    // Add some extra spin when the dice collide.
+    die1AngularVelocity += glm::vec3(
+        randomFloat(-1.5f, 1.5f),
+        randomFloat(1.0f, 2.2f),
+        randomFloat(-1.5f, 1.5f)
+    );
+
+    die2AngularVelocity += glm::vec3(
+        randomFloat(-1.5f, 1.5f),
+        randomFloat(1.0f, 2.2f),
+        randomFloat(-1.5f, 1.5f)
+    );
+
+    // If a sleeping die is hit by the other die, wake it up again.
+    die1Sleeping = false;
+    die2Sleeping = false;
+}
+
+    void forceStopDie(
+        glm::vec3& position,
+        glm::vec3& velocity,
+        glm::vec3& rotation,
+        glm::vec3& angularVelocity,
+        bool& sleeping,
+        int& value,
+        bool secondDie
+    ) {
+        sleeping = true;
+
+        // Clamp to valid resting height.
+        // This prevents the visual mesh from ending inside the board.
+        position.y = DICE_REST_Y;
+
+        // Keep final position on the board.
+        position.x = std::clamp(position.x, DICE_MIN_X, DICE_MAX_X);
+        position.z = std::clamp(position.z, DICE_MIN_Z, DICE_MAX_Z);
+
+        velocity = glm::vec3(0.0f);
+        angularVelocity = glm::vec3(0.0f);
+
+        value = diceDistribution(randomEngine);
+
+        // Important: final rotation should be face-aligned, not arbitrary.
+        // Otherwise the die can visually stop on a corner and penetrate the board.
+        rotation = finalDiceRotation(value, secondDie);
+    }
+
+
+    glm::vec3 finalDiceRotation(int value, bool secondDie) const {
+        // The die must stop on clean 90-degree rotations.
+        // That makes the cube visually aligned with the board plane.
+        //
+        // We vary only by 90-degree steps so it looks different per result,
+        // but never ends tilted into or above the ground.
+        float yTurn = secondDie ? glm::radians(90.0f) : glm::radians(0.0f);
+
+        switch (value) {
+        case 1:
+            return glm::vec3(
+                glm::radians(0.0f),
+                yTurn,
+                glm::radians(0.0f)
+            );
+
+        case 2:
+            return glm::vec3(
+                glm::radians(90.0f),
+                yTurn,
+                glm::radians(0.0f)
+            );
+
+        case 3:
+            return glm::vec3(
+                glm::radians(0.0f),
+                yTurn,
+                glm::radians(90.0f)
+            );
+
+        case 4:
+            return glm::vec3(
+                glm::radians(0.0f),
+                yTurn + glm::radians(90.0f),
+                glm::radians(90.0f)
+            );
+
+        case 5:
+            return glm::vec3(
+                glm::radians(270.0f),
+                yTurn,
+                glm::radians(0.0f)
+            );
+
+        case 6:
+        default:
+            return glm::vec3(
+                glm::radians(180.0f),
+                yTurn,
+                glm::radians(0.0f)
+            );
         }
     }
 
 
+void finishDiceRoll() {
+    diceRolling = false;
+
+    movementPoints = die1Value + die2Value;
+
+    std::cout
+        << "Dice result: "
+        << die1Value << " + " << die2Value
+        << " = " << movementPoints
+        << " movement points\n";
+}
     // -------------------------------
     // Main game/camera logic
     // -------------------------------
@@ -629,33 +1118,86 @@ protected:
 
         getSixAxis(deltaT, m, r, fire);
 
-        // -------------------------------
-        // Player token movement
-        // -------------------------------
+       // -------------------------------
+// Control mode + object movement
+// -------------------------------
 
-        moveCooldown -= deltaT;
+moveCooldown -= deltaT;
+modeSwitchCooldown -= deltaT;
 
-        if (moveCooldown <= 0.0f) {
-            if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-                tryMoveToken(-1, 0);
-                moveCooldown = 0.18f;
-            }
+// TAB switches between token movement and lamp movement.
+// This lets us reuse I/J/K/L without conflicting controls.
+if (
+    modeSwitchCooldown <= 0.0f &&
+    glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS
+) {
+    if (controlMode == ControlMode::Token) {
+        controlMode = ControlMode::Lamp;
+        std::cout << "Control mode: LAMP\n";
+    } else {
+        controlMode = ControlMode::Token;
+        std::cout << "Control mode: TOKEN\n";
+    }
 
-            if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
-                tryMoveToken(1, 0);
-                moveCooldown = 0.18f;
-            }
+    modeSwitchCooldown = 0.30f;
+}
 
-            if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
-                tryMoveToken(0, -1);
-                moveCooldown = 0.18f;
-            }
-
-            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-                tryMoveToken(0, 1);
-                moveCooldown = 0.18f;
-            }
+if (controlMode == ControlMode::Token) {
+    if (moveCooldown <= 0.0f) {
+        if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
+            tryMoveToken(-1, 0);
+            moveCooldown = 0.18f;
         }
+
+        if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+            tryMoveToken(1, 0);
+            moveCooldown = 0.18f;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+            tryMoveToken(0, -1);
+            moveCooldown = 0.18f;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+            tryMoveToken(0, 1);
+            moveCooldown = 0.18f;
+        }
+    }
+} else {
+    // Lamp mode:
+    // I/K move the lamp up/down.
+    // J/L move the lamp left/right.
+    // We keep Z fixed so the control is simple and exam-friendly.
+    glm::vec3 lampDelta = glm::vec3(0.0f);
+
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
+        lampDelta.y += 1.0f;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+        lampDelta.y -= 1.0f;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+        lampDelta.x -= 1.0f;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+        lampDelta.x += 1.0f;
+    }
+
+    if (glm::length(lampDelta) > 0.0f) {
+        lampDelta = glm::normalize(lampDelta);
+
+        lampWorldPosition += lampDelta * lampMoveSpeed * deltaT;
+
+        // Keep the lamp in a reasonable area.
+        lampWorldPosition.x = std::clamp(lampWorldPosition.x, -6.5f, 6.5f);
+        lampWorldPosition.y = std::clamp(lampWorldPosition.y, 0.8f, 5.0f);
+        lampWorldPosition.z = -4.7f;
+    }
+}
 
         // -------------------------------
         // Dice roll input
@@ -723,7 +1265,7 @@ protected:
             cameraTarget.z +
             cameraDistance * std::cos(cameraPitch) * std::cos(cameraYaw);
 
-        glm::mat4 Prj = glm::perspective(
+        glm::mat4 Prj = glm::perspectiveRH_ZO(
             FOVy,
             Ar,
             nearPlane,
@@ -820,29 +1362,26 @@ protected:
 
 
     glm::mat4 diceModelMatrix(
-       const glm::vec3& position,
-       float spin,
-       int value,
-       bool secondDie
-   ) const {
-        float valueAngle = glm::radians(static_cast<float>(value) * 25.0f);
-
+        const glm::vec3& position,
+        const glm::vec3& rotation,
+        int value,
+        bool secondDie
+    ) const {
         glm::mat4 M = glm::mat4(1.0f);
 
         // Translation: where the die is in the world.
         M = glm::translate(M, position);
 
-        // Rotation: while rolling, spin strongly around several axes.
-        // When stopped, valueAngle makes different values rest differently.
-        if (secondDie) {
-            M = glm::rotate(M, -spin + valueAngle, glm::vec3(1.0f, 0.0f, 0.0f));
-            M = glm::rotate(M, spin * 0.9f + valueAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-            M = glm::rotate(M, spin * 0.6f, glm::vec3(0.0f, 0.0f, 1.0f));
-        } else {
-            M = glm::rotate(M, spin + valueAngle, glm::vec3(1.0f, 0.0f, 0.0f));
-            M = glm::rotate(M, spin * 1.1f + valueAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-            M = glm::rotate(M, -spin * 0.7f, glm::vec3(0.0f, 0.0f, 1.0f));
-        }
+        // Rotation from the physics simulation.
+        // When the die is sleeping, forceStopDie() has already snapped this rotation
+        // to clean 90-degree steps, so the cube rests flat on the board.
+        M = glm::rotate(M, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        M = glm::rotate(M, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        M = glm::rotate(M, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+        // Do NOT add extra angle here.
+        // Even a small 7-degree rotation makes the final die look misaligned
+        // if the die mesh has visible edges/details.
 
         // Dice size.
         M = glm::scale(M, glm::vec3(0.45f, 0.45f, 0.45f));
@@ -852,11 +1391,12 @@ protected:
 
 
     glm::vec3 lampPosition() const {
-        return glm::vec3(3.0f, 2.2f, 2.2f);
+        return lampWorldPosition;
     }
 
     glm::vec3 lampTarget() const {
-        return glm::vec3(0.0f, 0.15f, 0.0f);
+        // Aim at the board center, slightly above the board surface.
+        return glm::vec3(0.0f, 0.35f, 0.0f);
     }
 
     glm::mat4 computeLightViewProj() const {
@@ -866,11 +1406,11 @@ protected:
             glm::vec3(0.0f, 1.0f, 0.0f)
         );
 
-        glm::mat4 lightProj = glm::perspective(
-            glm::radians(70.0f),
+        glm::mat4 lightProj = glm::perspectiveRH_ZO(
+            glm::radians(78.0f),
             1.0f,
-            0.1f,
-            12.0f
+            0.25f,
+            16.0f
         );
 
         // Vulkan clip-space correction.
@@ -899,6 +1439,15 @@ protected:
             // dice
             return glm::vec4(0.95f, 0.95f, 0.90f, 0.25f);
 
+        case 7:
+            // lamp_post
+            return glm::vec4(0.18f, 0.15f, 0.10f, 0.65f);
+
+        case 8:
+            // lamp_bulb
+            // Alpha above 1.5 is used by Arena.frag as an emissive marker.
+            return glm::vec4(1.0f, 0.82f, 0.35f, 2.0f);
+
         case 9:
         case 10:
         case 11:
@@ -922,6 +1471,7 @@ protected:
         }
     }
 
+
     void updateDiceInstances(float deltaT) {
         if (SC.TI == nullptr) {
             return;
@@ -931,53 +1481,11 @@ protected:
             return;
         }
 
-        glm::vec3 die1Position = die1LandPosition;
-        glm::vec3 die2Position = die2LandPosition;
-
-        if (diceRolling) {
-            // Progress goes from 0 to 1 during the roll.
-            float t = diceRollTimer / diceRollDuration;
-            t = std::clamp(t, 0.0f, 1.0f);
-
-            // Smooth horizontal movement.
-            float smoothT = t * t * (3.0f - 2.0f * t);
-
-            // Manual PI constant to avoid relying on extra includes.
-            const float PI = 3.14159265359f;
-
-            // Main throw arc: starts low, goes high, lands low.
-            float arcHeight = std::sin(PI * t) * 0.75f;
-
-            // Small bounce near the end.
-            float bounce = 0.0f;
-            if (t > 0.65f) {
-                float bounceT = (t - 0.65f) / 0.35f;
-                bounce = std::abs(std::sin(bounceT * PI * 3.0f)) *
-                         (1.0f - bounceT) *
-                         0.18f;
-            }
-
-            die1Position =
-                die1StartPosition * (1.0f - smoothT) +
-                die1LandPosition * smoothT;
-
-            die2Position =
-                die2StartPosition * (1.0f - smoothT) +
-                die2LandPosition * smoothT;
-
-            die1Position.y += arcHeight + bounce;
-            die2Position.y += arcHeight + bounce * 0.8f;
-
-            // Fast spin while the dice are rolling.
-            die1Spin += 16.0f * deltaT;
-            die2Spin += 19.0f * deltaT;
-        }
-
         SC.TI[0].I[DIE_1_INSTANCE_INDEX].Wm =
-            diceModelMatrix(die1Position, die1Spin, die1Value, false);
+            diceModelMatrix(die1Position, die1Rotation, die1Value, false);
 
         SC.TI[0].I[DIE_2_INSTANCE_INDEX].Wm =
-            diceModelMatrix(die2Position, die2Spin, die2Value, true);
+            diceModelMatrix(die2Position, die2Rotation, die2Value, true);
     }
 
 
@@ -992,6 +1500,54 @@ protected:
 
         SC.TI[0].I[TOKEN_INSTANCE_INDEX].Wm = tokenModelMatrix();
     }
+    glm::mat4 lampBulbModelMatrix() const {
+        glm::mat4 M = glm::mat4(1.0f);
+
+        M = glm::translate(M, lampWorldPosition);
+
+        // A small cube acting as the glowing bulb.
+        M = glm::scale(M, glm::vec3(0.34f, 0.34f, 0.34f));
+
+        return M;
+    }
+
+
+    glm::mat4 lampPostModelMatrix() const {
+        // The lamp post should follow the lamp horizontally.
+        // If the lamp moves up/down, the post stretches so it still reaches the bulb.
+        float baseY = 0.05f;
+        float postHeight = std::max(0.25f, lampWorldPosition.y - baseY);
+        float centerY = baseY + postHeight * 0.5f;
+
+        glm::mat4 M = glm::mat4(1.0f);
+
+        M = glm::translate(
+            M,
+            glm::vec3(lampWorldPosition.x, centerY, lampWorldPosition.z)
+        );
+
+        M = glm::scale(
+            M,
+            glm::vec3(0.10f, postHeight, 0.10f)
+        );
+
+        return M;
+    }
+
+
+    void updateLampInstances() {
+        if (SC.TI == nullptr) {
+            return;
+        }
+
+        if (SC.TI[0].InstanceCount <= LAMP_BULB_INSTANCE_INDEX) {
+            return;
+        }
+
+        SC.TI[0].I[LAMP_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix();
+        SC.TI[0].I[LAMP_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix();
+    }
+
 };
 
 
