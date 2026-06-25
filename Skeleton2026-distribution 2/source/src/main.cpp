@@ -218,16 +218,16 @@ protected:
     // Bounciness when the two dice collide with each other.
     static constexpr float DICE_DICE_RESTITUTION = 0.65f;
 
-    // Dice movement bounds on/near the board.// Dice tray area.
-    // The dice now roll inside the box next to the board, not across the board.
-    static constexpr float DICE_TRAY_CENTER_X = 5.2f;
+    // Dice tray area.
+    // The dice now roll inside the side tray, not on the board.
+    static constexpr float DICE_TRAY_CENTER_X = 5.8f;
     static constexpr float DICE_TRAY_CENTER_Z = 0.0f;
 
-    static constexpr float DICE_TRAY_HALF_X = 1.05f;
-    static constexpr float DICE_TRAY_HALF_Z = 0.95f;
+    static constexpr float DICE_TRAY_HALF_X = 1.10f;
+    static constexpr float DICE_TRAY_HALF_Z = 0.90f;
 
-    // Small margin so the dice do not visually pass through the tray walls.
-    static constexpr float DICE_TRAY_DICE_MARGIN = 0.32f;
+    // Keep dice away from the tray walls visually.
+    static constexpr float DICE_TRAY_DICE_MARGIN = 0.38f;
 
     static constexpr float DICE_MIN_X =
         DICE_TRAY_CENTER_X - DICE_TRAY_HALF_X + DICE_TRAY_DICE_MARGIN;

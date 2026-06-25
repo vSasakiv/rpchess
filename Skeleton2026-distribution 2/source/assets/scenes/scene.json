@@ -272,6 +272,42 @@
 					"translate": [4.2, 2.4, 4.2],
 					"scale": [0.34, 0.34, 0.34]
 				}
+			,
+				{
+					"id": "dice_tray_floor",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [5.8, 0.38, 0.0],
+					"scale": [1.40, 0.12, 1.20]
+				},
+				{
+					"id": "dice_tray_wall_left",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [4.40, 0.85, 0.0],
+					"scale": [0.16, 0.65, 1.20]
+				},
+				{
+					"id": "dice_tray_wall_right",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [7.20, 0.85, 0.0],
+					"scale": [0.16, 0.65, 1.20]
+				},
+				{
+					"id": "dice_tray_wall_back",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [5.8, 0.85, -1.20],
+					"scale": [1.40, 0.65, 0.16]
+				},
+				{
+					"id": "dice_tray_wall_front",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [5.8, 0.85, 1.20],
+					"scale": [1.40, 0.65, 0.16]
+				}
 			]
 		}
 	]
