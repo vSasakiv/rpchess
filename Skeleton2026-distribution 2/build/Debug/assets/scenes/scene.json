@@ -229,6 +229,48 @@
 					"translate": [2.5, 0.32, -2.5],
 					"scale": [0.15, 0.15, 0.15],
 					"eulerAngles": [-90.0, 0.0, 0.0]
+				},
+				{
+					"id": "lamp_post_2",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [4.2, 1.20, -4.2],
+					"scale": [0.10, 2.4, 0.10]
+				},
+				{
+					"id": "lamp_bulb_2",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [4.2, 2.4, -4.2],
+					"scale": [0.34, 0.34, 0.34]
+				},
+				{
+					"id": "lamp_post_3",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [-4.2, 1.20, 4.2],
+					"scale": [0.10, 2.4, 0.10]
+				},
+				{
+					"id": "lamp_bulb_3",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [-4.2, 2.4, 4.2],
+					"scale": [0.34, 0.34, 0.34]
+				},
+				{
+					"id": "lamp_post_4",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [4.2, 1.20, 4.2],
+					"scale": [0.10, 2.4, 0.10]
+				},
+				{
+					"id": "lamp_bulb_4",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [4.2, 2.4, 4.2],
+					"scale": [0.34, 0.34, 0.34]
 				}
 			]
 		}

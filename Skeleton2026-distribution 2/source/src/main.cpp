@@ -18,12 +18,20 @@ struct UniformBufferObject {
     alignas(16) glm::vec4 materialColor;
 };
 
-
 // Uniform buffer shared by the whole scene
 struct GlobalUniformBufferObject {
     alignas(16) glm::mat4 lightViewProj;
-    alignas(16) glm::vec4 lightPos;
-    alignas(16) glm::vec4 lightColor;
+
+    // Four point lights.
+    // xyz = world position, w = unused
+    alignas(16) glm::vec4 lightPositions[4];
+
+    // rgb = color, w = intensity
+    alignas(16) glm::vec4 lightColors[4];
+
+    // x/y/z/w = enabled state for light 0/1/2/3
+    alignas(16) glm::vec4 lightEnabled;
+
     alignas(16) glm::vec4 eyePos;
     alignas(16) glm::vec4 shadowParams;
 };
@@ -110,30 +118,65 @@ protected:
     static constexpr int TOKEN_INSTANCE_INDEX = 2;
     static constexpr int DIE_1_INSTANCE_INDEX = 5;
     static constexpr int DIE_2_INSTANCE_INDEX = 6;
-    static constexpr int LAMP_POST_INSTANCE_INDEX = 7;
-    static constexpr int LAMP_BULB_INSTANCE_INDEX = 8;
+    static constexpr int LAMP_1_POST_INSTANCE_INDEX = 7;
+    static constexpr int LAMP_1_BULB_INSTANCE_INDEX = 8;
+
+    static constexpr int LAMP_2_POST_INSTANCE_INDEX = 21;
+    static constexpr int LAMP_2_BULB_INSTANCE_INDEX = 22;
+
+    static constexpr int LAMP_3_POST_INSTANCE_INDEX = 23;
+    static constexpr int LAMP_3_BULB_INSTANCE_INDEX = 24;
+
+    static constexpr int LAMP_4_POST_INSTANCE_INDEX = 25;
+    static constexpr int LAMP_4_BULB_INSTANCE_INDEX = 26;
+    static constexpr int DICE_TRAY_FLOOR_INSTANCE_INDEX = 27;
+    static constexpr int DICE_TRAY_WALL_LEFT_INSTANCE_INDEX = 28;
+    static constexpr int DICE_TRAY_WALL_RIGHT_INSTANCE_INDEX = 29;
+    static constexpr int DICE_TRAY_WALL_BACK_INSTANCE_INDEX = 30;
+    static constexpr int DICE_TRAY_WALL_FRONT_INSTANCE_INDEX = 31;
 
     int tokenRow = 6;
     int tokenCol = 1;
 
     float moveCooldown = 0.0f;
 
+    // -------------------------------
+    // Four corner lights
+    // -------------------------------
 
+    static constexpr int NUM_CORNER_LIGHTS = 4;
 
-    enum class ControlMode {
-        Token,
-        Lamp
+    // The lights are placed around the board.
+    // These are point lights used by the fragment shader.
+    glm::vec4 cornerLightPositions[NUM_CORNER_LIGHTS] = {
+        glm::vec4(-4.2f, 2.4f, -4.2f, 1.0f), // light 1: back-left
+        glm::vec4( 4.2f, 2.4f, -4.2f, 1.0f), // light 2: back-right
+        glm::vec4(-4.2f, 2.4f,  4.2f, 1.0f), // light 3: front-left
+        glm::vec4( 4.2f, 2.4f,  4.2f, 1.0f)  // light 4: front-right
     };
 
-    ControlMode controlMode = ControlMode::Token;
+    // rgb = color, w = intensity.
+    // Lower intensity than the old single lamp, because now several lights can be active.
+    glm::vec4 cornerLightColors[NUM_CORNER_LIGHTS] = {
+        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f),
+        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f),
+        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f),
+        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f)
+    };
 
-    float modeSwitchCooldown = 0.0f;
+    bool cornerLightEnabled[NUM_CORNER_LIGHTS] = {
+        true,
+        true,
+        true,
+        true
+    };
 
-    // The visible lamp bulb and the actual shader light source use this same position.
-    // This keeps the rendered lamp and the shadows consistent.
-    glm::vec3 lampWorldPosition = glm::vec3(4.7f, 2.2f, -4.7f);
-
-    float lampMoveSpeed = 2.2f;
+    float lightToggleCooldown[NUM_CORNER_LIGHTS] = {
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f
+    };
 
     // -------------------------------
     // Dice and movement-point state
@@ -175,14 +218,31 @@ protected:
     // Bounciness when the two dice collide with each other.
     static constexpr float DICE_DICE_RESTITUTION = 0.65f;
 
-    // Dice movement bounds on/near the board.
-    static constexpr float DICE_MIN_X = -3.55f;
-    static constexpr float DICE_MAX_X = 3.55f;
-    static constexpr float DICE_MIN_Z = -3.55f;
-    static constexpr float DICE_MAX_Z = 3.55f;
+    // Dice movement bounds on/near the board.// Dice tray area.
+    // The dice now roll inside the box next to the board, not across the board.
+    static constexpr float DICE_TRAY_CENTER_X = 5.2f;
+    static constexpr float DICE_TRAY_CENTER_Z = 0.0f;
 
-    glm::vec3 die1Position = glm::vec3(-3.2f, DICE_REST_Y, -2.6f);
-    glm::vec3 die2Position = glm::vec3(-2.5f, DICE_REST_Y, -2.6f);
+    static constexpr float DICE_TRAY_HALF_X = 1.05f;
+    static constexpr float DICE_TRAY_HALF_Z = 0.95f;
+
+    // Small margin so the dice do not visually pass through the tray walls.
+    static constexpr float DICE_TRAY_DICE_MARGIN = 0.32f;
+
+    static constexpr float DICE_MIN_X =
+        DICE_TRAY_CENTER_X - DICE_TRAY_HALF_X + DICE_TRAY_DICE_MARGIN;
+
+    static constexpr float DICE_MAX_X =
+        DICE_TRAY_CENTER_X + DICE_TRAY_HALF_X - DICE_TRAY_DICE_MARGIN;
+
+    static constexpr float DICE_MIN_Z =
+        DICE_TRAY_CENTER_Z - DICE_TRAY_HALF_Z + DICE_TRAY_DICE_MARGIN;
+
+    static constexpr float DICE_MAX_Z =
+        DICE_TRAY_CENTER_Z + DICE_TRAY_HALF_Z - DICE_TRAY_DICE_MARGIN;
+
+    glm::vec3 die1Position = glm::vec3(DICE_TRAY_CENTER_X - 0.35f, DICE_REST_Y, DICE_TRAY_CENTER_Z - 0.20f);
+    glm::vec3 die2Position = glm::vec3(DICE_TRAY_CENTER_X + 0.35f, DICE_REST_Y, DICE_TRAY_CENTER_Z + 0.20f);
 
     glm::vec3 die1Velocity = glm::vec3(0.0f);
     glm::vec3 die2Velocity = glm::vec3(0.0f);
@@ -369,9 +429,10 @@ protected:
         P.setCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
         // Descriptor pool size.
         // We have several scene objects, so this must be larger than the starter default.
-        DPSZs.uniformBlocksInPool = 30;
-        DPSZs.texturesInPool = 30;
-        DPSZs.setsInPool = 30;
+
+        DPSZs.uniformBlocksInPool = 80;
+        DPSZs.texturesInPool = 80;
+        DPSZs.setsInPool = 80;
 
         // Scene support names.
         // These must match scene.json.
@@ -513,7 +574,17 @@ void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
     SC.populateCommandBuffer(commandBuffer, 1, currentImage);
     RP.end(commandBuffer);
 }
-
+    bool isLampInstance(int instanceId) const {
+        return
+            instanceId == LAMP_1_POST_INSTANCE_INDEX ||
+            instanceId == LAMP_1_BULB_INSTANCE_INDEX ||
+            instanceId == LAMP_2_POST_INSTANCE_INDEX ||
+            instanceId == LAMP_2_BULB_INSTANCE_INDEX ||
+            instanceId == LAMP_3_POST_INSTANCE_INDEX ||
+            instanceId == LAMP_3_BULB_INSTANCE_INDEX ||
+            instanceId == LAMP_4_POST_INSTANCE_INDEX ||
+            instanceId == LAMP_4_BULB_INSTANCE_INDEX;
+    }
 
 bool instanceCastsShadow(int instanceId) const {
     // Scene instance indices from scene.json:
@@ -525,9 +596,14 @@ bool instanceCastsShadow(int instanceId) const {
     // These should not be rendered into the shadow map.
     // The board and table are receivers.
     // The lamp should not cast a weird lamp-shaped shadow on the board.
-    if (instanceId == 0 || instanceId == 1 || instanceId == 7 || instanceId == 8) {
-        return false;
-    }
+        if (
+            instanceId == 0 ||
+            instanceId == 1 ||
+            instanceId == DICE_TRAY_FLOOR_INSTANCE_INDEX ||
+            isLampInstance(instanceId)
+        ) {
+            return false;
+        }
 
     return true;
 }
@@ -593,10 +669,20 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
 
         GlobalUniformBufferObject gubo{};
         gubo.lightViewProj = lightViewProj;
-        gubo.lightPos = glm::vec4(lampPosition(), 1.0f);
-        gubo.lightColor = glm::vec4(1.0f, 0.82f, 0.55f, 1.0f) * 7.0f;
-        gubo.eyePos = glm::vec4(glm::vec3(glm::inverse(View)[3]), 1.0f);
 
+        for (int i = 0; i < NUM_CORNER_LIGHTS; i++) {
+            gubo.lightPositions[i] = cornerLightPositions[i];
+            gubo.lightColors[i] = cornerLightColors[i];
+        }
+
+        gubo.lightEnabled = glm::vec4(
+            cornerLightEnabled[0] ? 1.0f : 0.0f,
+            cornerLightEnabled[1] ? 1.0f : 0.0f,
+            cornerLightEnabled[2] ? 1.0f : 0.0f,
+            cornerLightEnabled[3] ? 1.0f : 0.0f
+        );
+
+        gubo.eyePos = glm::vec4(glm::vec3(glm::inverse(View)[3]), 1.0f);
         // x = base bias
         // y = shadow strength
         // z = shadow map size
@@ -650,16 +736,18 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
                 oss << "SPACE: roll dice\n";
             }
 
-            if (controlMode == ControlMode::Token) {
-                oss << "Mode: TOKEN\n";
-                oss << "TAB: switch to lamp\n";
-                oss << "I/J/K/L: move token\n";
-            } else {
-                oss << "Mode: LAMP\n";
-                oss << "TAB: switch to token\n";
-                oss << "I/K: lamp up/down\n";
-                oss << "J/L: lamp left/right\n";
+            oss << "I/J/K/L: move token\n";
+            oss << "1/2/3/4: toggle lights\n";
+
+            oss << "Lights: ";
+            for (int i = 0; i < NUM_CORNER_LIGHTS; i++) {
+                oss << (cornerLightEnabled[i] ? "ON" : "OFF");
+
+                if (i < NUM_CORNER_LIGHTS - 1) {
+                    oss << " | ";
+                }
             }
+            oss << "\n";
 
             txt.print(
                 1.0f, 1.0f,
@@ -704,21 +792,31 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
         die2Sleeping = false;
 
         // Start positions, slightly above the board.
-        die1Position = glm::vec3(-3.1f, DICE_REST_Y + 0.55f, -2.65f);
-        die2Position = glm::vec3(-2.35f, DICE_REST_Y + 0.55f, -2.65f);
+        die1Position = glm::vec3(
+            DICE_TRAY_CENTER_X - 0.35f,
+            DICE_REST_Y + 0.55f,
+            DICE_TRAY_CENTER_Z - 0.20f
+        );
+
+        die2Position = glm::vec3(
+            DICE_TRAY_CENTER_X + 0.35f,
+            DICE_REST_Y + 0.55f,
+            DICE_TRAY_CENTER_Z + 0.20f
+        );
 
         // Initial velocities.
         // x/z move them across the board, y throws them upward.
+        // Smaller horizontal velocities because the dice now roll inside a tray.
         die1Velocity = glm::vec3(
-            randomFloat(1.3f, 2.0f),
-            randomFloat(3.4f, 4.3f),
-            randomFloat(0.9f, 1.5f)
+            randomFloat(-0.9f, 0.9f),
+            randomFloat(3.5f, 4.4f),
+            randomFloat(-0.8f, 0.8f)
         );
 
         die2Velocity = glm::vec3(
-            randomFloat(1.1f, 1.9f),
-            randomFloat(3.2f, 4.1f),
-            randomFloat(0.8f, 1.4f)
+            randomFloat(-0.9f, 0.9f),
+            randomFloat(3.4f, 4.3f),
+            randomFloat(-0.8f, 0.8f)
         );
 
         // Strong random angular velocity makes the dice spin while flying.
@@ -1106,6 +1204,26 @@ void finishDiceRoll() {
     // Main game/camera logic
     // -------------------------------
 
+    void tryToggleCornerLight(int key, int lightIndex) {
+        if (lightIndex < 0 || lightIndex >= NUM_CORNER_LIGHTS) {
+            return;
+        }
+
+        if (
+            lightToggleCooldown[lightIndex] <= 0.0f &&
+            glfwGetKey(window, key) == GLFW_PRESS
+        ) {
+            cornerLightEnabled[lightIndex] = !cornerLightEnabled[lightIndex];
+
+            std::cout
+                << "Light " << (lightIndex + 1)
+                << (cornerLightEnabled[lightIndex] ? " ON\n" : " OFF\n");
+
+            lightToggleCooldown[lightIndex] = 0.30f;
+        }
+    }
+
+
     float GameLogic() {
         const float FOVy = glm::radians(45.0f);
         const float nearPlane = 0.1f;
@@ -1118,86 +1236,45 @@ void finishDiceRoll() {
 
         getSixAxis(deltaT, m, r, fire);
 
-       // -------------------------------
-// Control mode + object movement
-// -------------------------------
+        // -------------------------------
+        // Token movement + light toggles
+        // -------------------------------
 
-moveCooldown -= deltaT;
-modeSwitchCooldown -= deltaT;
+        moveCooldown -= deltaT;
 
-// TAB switches between token movement and lamp movement.
-// This lets us reuse I/J/K/L without conflicting controls.
-if (
-    modeSwitchCooldown <= 0.0f &&
-    glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS
-) {
-    if (controlMode == ControlMode::Token) {
-        controlMode = ControlMode::Lamp;
-        std::cout << "Control mode: LAMP\n";
-    } else {
-        controlMode = ControlMode::Token;
-        std::cout << "Control mode: TOKEN\n";
-    }
-
-    modeSwitchCooldown = 0.30f;
-}
-
-if (controlMode == ControlMode::Token) {
-    if (moveCooldown <= 0.0f) {
-        if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-            tryMoveToken(-1, 0);
-            moveCooldown = 0.18f;
+        for (int i = 0; i < NUM_CORNER_LIGHTS; i++) {
+            lightToggleCooldown[i] -= deltaT;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
-            tryMoveToken(1, 0);
-            moveCooldown = 0.18f;
+        // 1/2/3/4 toggle the four corner lights.
+        tryToggleCornerLight(GLFW_KEY_1, 0);
+        tryToggleCornerLight(GLFW_KEY_2, 1);
+        tryToggleCornerLight(GLFW_KEY_3, 2);
+        tryToggleCornerLight(GLFW_KEY_4, 3);
+
+        // I/J/K/L always move the token again.
+        if (moveCooldown <= 0.0f) {
+            if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
+                tryMoveToken(-1, 0);
+                moveCooldown = 0.18f;
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
+                tryMoveToken(1, 0);
+                moveCooldown = 0.18f;
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
+                tryMoveToken(0, -1);
+                moveCooldown = 0.18f;
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+                tryMoveToken(0, 1);
+                moveCooldown = 0.18f;
+            }
         }
 
-        if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
-            tryMoveToken(0, -1);
-            moveCooldown = 0.18f;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-            tryMoveToken(0, 1);
-            moveCooldown = 0.18f;
-        }
-    }
-} else {
-    // Lamp mode:
-    // I/K move the lamp up/down.
-    // J/L move the lamp left/right.
-    // We keep Z fixed so the control is simple and exam-friendly.
-    glm::vec3 lampDelta = glm::vec3(0.0f);
-
-    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
-        lampDelta.y += 1.0f;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) {
-        lampDelta.y -= 1.0f;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) {
-        lampDelta.x -= 1.0f;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-        lampDelta.x += 1.0f;
-    }
-
-    if (glm::length(lampDelta) > 0.0f) {
-        lampDelta = glm::normalize(lampDelta);
-
-        lampWorldPosition += lampDelta * lampMoveSpeed * deltaT;
-
-        // Keep the lamp in a reasonable area.
-        lampWorldPosition.x = std::clamp(lampWorldPosition.x, -6.5f, 6.5f);
-        lampWorldPosition.y = std::clamp(lampWorldPosition.y, 0.8f, 5.0f);
-        lampWorldPosition.z = -4.7f;
-    }
-}
 
         // -------------------------------
         // Dice roll input
@@ -1391,7 +1468,9 @@ if (controlMode == ControlMode::Token) {
 
 
     glm::vec3 lampPosition() const {
-        return lampWorldPosition;
+        // The shadow map still uses light 1.
+        // The scene has four lights for illumination, but only one shadow-casting light.
+        return glm::vec3(cornerLightPositions[0]);
     }
 
     glm::vec3 lampTarget() const {
@@ -1418,7 +1497,15 @@ if (controlMode == ControlMode::Token) {
 
         return lightProj * lightView;
     }
+    glm::vec4 lampBulbMaterial(int lightIndex) const {
+        if (cornerLightEnabled[lightIndex]) {
+            // Alpha > 1.5 means emissive in Arena.frag.
+            return glm::vec4(1.0f, 0.82f, 0.35f, 2.0f);
+        }
 
+        // Dark non-emissive bulb when off.
+        return glm::vec4(0.05f, 0.04f, 0.03f, 0.75f);
+    }
     glm::vec4 objectMaterialColor(int instanceId) const {
         switch (instanceId) {
         case 0:
@@ -1439,15 +1526,24 @@ if (controlMode == ControlMode::Token) {
             // dice
             return glm::vec4(0.95f, 0.95f, 0.90f, 0.25f);
 
-        case 7:
-            // lamp_post
+        case LAMP_1_POST_INSTANCE_INDEX:
+        case LAMP_2_POST_INSTANCE_INDEX:
+        case LAMP_3_POST_INSTANCE_INDEX:
+        case LAMP_4_POST_INSTANCE_INDEX:
+            // lamp posts
             return glm::vec4(0.18f, 0.15f, 0.10f, 0.65f);
 
-        case 8:
-            // lamp_bulb
-            // Alpha above 1.5 is used by Arena.frag as an emissive marker.
-            return glm::vec4(1.0f, 0.82f, 0.35f, 2.0f);
+        case LAMP_1_BULB_INSTANCE_INDEX:
+            return lampBulbMaterial(0);
 
+        case LAMP_2_BULB_INSTANCE_INDEX:
+            return lampBulbMaterial(1);
+
+        case LAMP_3_BULB_INSTANCE_INDEX:
+            return lampBulbMaterial(2);
+
+        case LAMP_4_BULB_INSTANCE_INDEX:
+            return lampBulbMaterial(3);
         case 9:
         case 10:
         case 11:
@@ -1465,7 +1561,16 @@ if (controlMode == ControlMode::Token) {
         case 20:
             // black pieces
             return glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
+        case DICE_TRAY_FLOOR_INSTANCE_INDEX:
+            // dice tray floor
+            return glm::vec4(0.32f, 0.18f, 0.08f, 0.55f);
 
+        case DICE_TRAY_WALL_LEFT_INSTANCE_INDEX:
+        case DICE_TRAY_WALL_RIGHT_INSTANCE_INDEX:
+        case DICE_TRAY_WALL_BACK_INSTANCE_INDEX:
+        case DICE_TRAY_WALL_FRONT_INSTANCE_INDEX:
+            // dice tray walls
+            return glm::vec4(0.22f, 0.12f, 0.05f, 0.75f);
         default:
             return glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
         }
@@ -1500,30 +1605,30 @@ if (controlMode == ControlMode::Token) {
 
         SC.TI[0].I[TOKEN_INSTANCE_INDEX].Wm = tokenModelMatrix();
     }
-    glm::mat4 lampBulbModelMatrix() const {
+    glm::mat4 lampBulbModelMatrix(int lightIndex) const {
+        glm::vec3 lampPos = glm::vec3(cornerLightPositions[lightIndex]);
+
         glm::mat4 M = glm::mat4(1.0f);
 
-        M = glm::translate(M, lampWorldPosition);
-
-        // A small cube acting as the glowing bulb.
+        M = glm::translate(M, lampPos);
         M = glm::scale(M, glm::vec3(0.34f, 0.34f, 0.34f));
 
         return M;
     }
 
 
-    glm::mat4 lampPostModelMatrix() const {
-        // The lamp post should follow the lamp horizontally.
-        // If the lamp moves up/down, the post stretches so it still reaches the bulb.
+    glm::mat4 lampPostModelMatrix(int lightIndex) const {
+        glm::vec3 lampPos = glm::vec3(cornerLightPositions[lightIndex]);
+
         float baseY = 0.05f;
-        float postHeight = std::max(0.25f, lampWorldPosition.y - baseY);
+        float postHeight = std::max(0.25f, lampPos.y - baseY);
         float centerY = baseY + postHeight * 0.5f;
 
         glm::mat4 M = glm::mat4(1.0f);
 
         M = glm::translate(
             M,
-            glm::vec3(lampWorldPosition.x, centerY, lampWorldPosition.z)
+            glm::vec3(lampPos.x, centerY, lampPos.z)
         );
 
         M = glm::scale(
@@ -1534,23 +1639,29 @@ if (controlMode == ControlMode::Token) {
         return M;
     }
 
-
     void updateLampInstances() {
         if (SC.TI == nullptr) {
             return;
         }
 
-        if (SC.TI[0].InstanceCount <= LAMP_BULB_INSTANCE_INDEX) {
+        if (SC.TI[0].InstanceCount <= LAMP_4_BULB_INSTANCE_INDEX) {
             return;
         }
 
-        SC.TI[0].I[LAMP_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix();
-        SC.TI[0].I[LAMP_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix();
+        SC.TI[0].I[LAMP_1_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(0);
+        SC.TI[0].I[LAMP_1_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(0);
+
+        SC.TI[0].I[LAMP_2_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(1);
+        SC.TI[0].I[LAMP_2_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(1);
+
+        SC.TI[0].I[LAMP_3_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(2);
+        SC.TI[0].I[LAMP_3_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(2);
+
+        SC.TI[0].I[LAMP_4_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(3);
+        SC.TI[0].I[LAMP_4_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(3);
     }
 
 };
-
-
 int main() {
     TabletopDiceRPGArena app;
 

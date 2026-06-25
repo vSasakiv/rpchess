@@ -2,8 +2,11 @@
 
 layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
     mat4 lightViewProj;
-    vec4 lightPos;
-    vec4 lightColor;
+
+    vec4 lightPositions[4];
+    vec4 lightColors[4];
+    vec4 lightEnabled;
+
     vec4 eyePos;
     vec4 shadowParams;
 } gubo;
@@ -73,36 +76,28 @@ float computeShadowVisibility(vec3 worldPos, vec3 normal, vec3 lightDir) {
     return 1.0 - shadowAmount * shadowStrength;
 }
 
-void main() {
-    vec3 texColor = texture(texSampler, fragUV).rgb;
-
-    // materialColor.a normally controls how much we tint the texture.
-    // But if alpha > 1.5, we treat the object as emissive.
-    bool isEmissive = ubo.materialColor.a > 1.5;
-
-    if (isEmissive) {
-        // Emissive objects are not shaded by the lamp and do not become dark in shadow.
-        // This makes the lamp bulb look like it produces light.
-        vec3 emissiveColor = ubo.materialColor.rgb * 4.0;
-
-        // Small texture contribution so the object still keeps some surface detail.
-        emissiveColor += texColor * 0.15;
-
-        outColor = vec4(emissiveColor, 1.0);
-        return;
+vec3 computePointLight(
+    vec4 lightPosition,
+    vec4 lightColorAndIntensity,
+    float enabled,
+    float usesShadow,
+    vec3 baseColor,
+    vec3 normal,
+    vec3 viewDir
+) {
+    if (enabled < 0.5) {
+        return vec3(0.0);
     }
 
-    vec3 N = normalize(fragNormal);
+    vec3 lightPos = lightPosition.xyz;
+    vec3 lightColor = lightColorAndIntensity.rgb;
+    float lightIntensity = lightColorAndIntensity.a;
 
-    vec3 lightVector = gubo.lightPos.xyz - fragWorldPos;
+    vec3 lightVector = lightPos - fragWorldPos;
     float distanceToLight = length(lightVector);
-    vec3 L = normalize(lightVector);
+    vec3 lightDir = normalize(lightVector);
 
-    vec3 V = normalize(gubo.eyePos.xyz - fragWorldPos);
-    vec3 H = normalize(L + V);
-
-    float tintStrength = clamp(ubo.materialColor.a, 0.0, 1.0);
-    vec3 baseColor = mix(texColor, ubo.materialColor.rgb, tintStrength);
+    vec3 halfVector = normalize(lightDir + viewDir);
 
     float constantAtt = 1.0;
     float linearAtt = 0.18;
@@ -115,24 +110,107 @@ void main() {
     quadraticAtt * distanceToLight * distanceToLight
     );
 
-    // Ambient light approximates indirect light.
-    // It is not affected by shadow, otherwise shadows become completely black.
-    float ambientStrength = 0.13;
+    float diff = max(dot(normal, lightDir), 0.0);
+
+    vec3 diffuse =
+    diff *
+    baseColor *
+    lightColor *
+    lightIntensity *
+    attenuation;
+
+    float specularStrength = 0.35;
+    float shininess = 48.0;
+    float spec = pow(max(dot(normal, halfVector), 0.0), shininess);
+
+    vec3 specular =
+    specularStrength *
+    spec *
+    lightColor *
+    lightIntensity *
+    attenuation;
+
+    float visibility = 1.0;
+
+    if (usesShadow > 0.5) {
+        visibility = computeShadowVisibility(fragWorldPos, normal, lightDir);
+    }
+
+    return visibility * (diffuse + specular);
+}
+
+void main() {
+    vec3 texColor = texture(texSampler, fragUV).rgb;
+
+    // Alpha above 1.5 means emissive material.
+    // We avoid storing this as a bool because some shader parsers complain.
+    if (ubo.materialColor.a > 1.5) {
+        vec3 emissiveColor = ubo.materialColor.rgb * 4.0;
+        emissiveColor += texColor * 0.15;
+
+        outColor = vec4(emissiveColor, 1.0);
+        return;
+    }
+
+    vec3 N = normalize(fragNormal);
+    vec3 V = normalize(gubo.eyePos.xyz - fragWorldPos);
+
+    float tintStrength = clamp(ubo.materialColor.a, 0.0, 1.0);
+    vec3 baseColor = mix(texColor, ubo.materialColor.rgb, tintStrength);
+
+    // Ambient approximates indirect/background light.
+    // It remains even when all lamps are off, so the scene is still visible.
+    float ambientStrength = 0.04;
     vec3 ambient = ambientStrength * baseColor;
 
-    // Lambert diffuse lighting.
-    float diff = max(dot(N, L), 0.0);
-    vec3 diffuse = diff * baseColor * gubo.lightColor.rgb * attenuation;
+    vec3 lighting = vec3(0.0);
 
-    // Blinn-Phong specular lighting.
-    float specularStrength = 0.40;
-    float shininess = 48.0;
-    float spec = pow(max(dot(N, H), 0.0), shininess);
-    vec3 specular = specularStrength * spec * gubo.lightColor.rgb * attenuation;
+    // Light 0 uses the existing shadow map.
+    lighting += computePointLight(
+        gubo.lightPositions[0],
+        gubo.lightColors[0],
+        gubo.lightEnabled.x,
+        1.0,
+        baseColor,
+        N,
+        V
+    );
 
-    float visibility = computeShadowVisibility(fragWorldPos, N, L);
+    // Lights 1-3 illuminate without shadows.
+    lighting += computePointLight(
+        gubo.lightPositions[1],
+        gubo.lightColors[1],
+        gubo.lightEnabled.y,
+        0.0,
+        baseColor,
+        N,
+        V
+    );
 
-    vec3 finalColor = ambient + visibility * (diffuse + specular);
+    lighting += computePointLight(
+        gubo.lightPositions[2],
+        gubo.lightColors[2],
+        gubo.lightEnabled.z,
+        0.0,
+        baseColor,
+        N,
+        V
+    );
+
+    lighting += computePointLight(
+        gubo.lightPositions[3],
+        gubo.lightColors[3],
+        gubo.lightEnabled.w,
+        0.0,
+        baseColor,
+        N,
+        V
+    );
+
+    vec3 finalColor = ambient + lighting;
+
+    // Avoid extreme over-bright values when all four lights are active.
+    finalColor = finalColor / (finalColor + vec3(1.0));
 
     outColor = vec4(finalColor, 1.0);
 }
