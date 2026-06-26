@@ -118,8 +118,9 @@ protected:
     static constexpr int TOKEN_INSTANCE_INDEX = 2;
     static constexpr int DIE_1_INSTANCE_INDEX = 5;
     static constexpr int DIE_2_INSTANCE_INDEX = 6;
-    static constexpr int LAMP_1_POST_INSTANCE_INDEX = 7;
-    static constexpr int LAMP_1_BULB_INSTANCE_INDEX = 8;
+
+    static constexpr int LAMP_1_POST_INSTANCE_INDEX = 19;
+    static constexpr int LAMP_1_BULB_INSTANCE_INDEX = 20;
 
     static constexpr int LAMP_2_POST_INSTANCE_INDEX = 21;
     static constexpr int LAMP_2_BULB_INSTANCE_INDEX = 22;
@@ -129,11 +130,8 @@ protected:
 
     static constexpr int LAMP_4_POST_INSTANCE_INDEX = 25;
     static constexpr int LAMP_4_BULB_INSTANCE_INDEX = 26;
-    static constexpr int DICE_TRAY_FLOOR_INSTANCE_INDEX = 27;
-    static constexpr int DICE_TRAY_WALL_LEFT_INSTANCE_INDEX = 28;
-    static constexpr int DICE_TRAY_WALL_RIGHT_INSTANCE_INDEX = 29;
-    static constexpr int DICE_TRAY_WALL_BACK_INSTANCE_INDEX = 30;
-    static constexpr int DICE_TRAY_WALL_FRONT_INSTANCE_INDEX = 31;
+    static constexpr int DICE_TRAY_INDEX = 27;
+
 
     int tokenRow = 6;
     int tokenCol = 1;
@@ -599,7 +597,7 @@ bool instanceCastsShadow(int instanceId) const {
         if (
             instanceId == 0 ||
             instanceId == 1 ||
-            instanceId == DICE_TRAY_FLOOR_INSTANCE_INDEX ||
+            instanceId == DICE_TRAY_INDEX ||
             isLampInstance(instanceId)
         ) {
             return false;
@@ -660,7 +658,7 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
 
         updateTokenInstance();
         updateDiceInstances(deltaT);
-        updateLampInstances();
+        // updateLampInstances();
 
         glm::mat4 lightViewProj = computeLightViewProj();
 
@@ -1376,7 +1374,7 @@ void finishDiceRoll() {
         float z =
             (static_cast<float>(row) - (GRID_ROWS - 1) * 0.5f) * CELL_SIZE;
 
-        return glm::vec3(x, 0.38f, z);
+        return glm::vec3(x, 0.30f, z);
     }
 
 
@@ -1434,7 +1432,7 @@ void finishDiceRoll() {
         glm::vec3 pos = gridToWorld(tokenRow, tokenCol);
 
         return glm::translate(glm::mat4(1.0f), pos) *
-               glm::scale(glm::mat4(1.0f), glm::vec3(0.55f, 0.35f, 0.55f));
+               glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f));
     }
 
 
@@ -1514,7 +1512,7 @@ void finishDiceRoll() {
 
         case 2:
             // player_token
-            return glm::vec4(1.0f, 0.25f, 0.10f, 0.25f);
+            return glm::vec4(0.25f, 0.25f, 1.00f, 1.0f);
 
         case 3:
         case 4:
@@ -1526,12 +1524,6 @@ void finishDiceRoll() {
             // dice
             return glm::vec4(0.95f, 0.95f, 0.90f, 0.25f);
 
-        case LAMP_1_POST_INSTANCE_INDEX:
-        case LAMP_2_POST_INSTANCE_INDEX:
-        case LAMP_3_POST_INSTANCE_INDEX:
-        case LAMP_4_POST_INSTANCE_INDEX:
-            // lamp posts
-            return glm::vec4(0.18f, 0.15f, 0.10f, 0.65f);
 
         case LAMP_1_BULB_INSTANCE_INDEX:
             return lampBulbMaterial(0);
@@ -1544,33 +1536,27 @@ void finishDiceRoll() {
 
         case LAMP_4_BULB_INSTANCE_INDEX:
             return lampBulbMaterial(3);
+        case 7:
+        case 8:
         case 9:
         case 10:
         case 11:
         case 12:
-        case 13:
-        case 14:
             // white pieces
             return glm::vec4(0.95f, 0.95f, 0.90f, 1.0f);
 
+        case 13:
+        case 14:
         case 15:
         case 16:
         case 17:
         case 18:
-        case 19:
-        case 20:
             // black pieces
             return glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
-        case DICE_TRAY_FLOOR_INSTANCE_INDEX:
-            // dice tray floor
+        case DICE_TRAY_INDEX:
+            // dice tray
             return glm::vec4(0.32f, 0.18f, 0.08f, 0.55f);
 
-        case DICE_TRAY_WALL_LEFT_INSTANCE_INDEX:
-        case DICE_TRAY_WALL_RIGHT_INSTANCE_INDEX:
-        case DICE_TRAY_WALL_BACK_INSTANCE_INDEX:
-        case DICE_TRAY_WALL_FRONT_INSTANCE_INDEX:
-            // dice tray walls
-            return glm::vec4(0.22f, 0.12f, 0.05f, 0.75f);
         default:
             return glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
         }
