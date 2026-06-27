@@ -3,6 +3,10 @@
 #include <algorithm>
 #include <random>
 #include <cmath>
+#include <array>
+#include <vector>
+#include <fstream>
+#include <string>
 
 #include "../include/json.hpp"
 #include "../include/modules/Starter.hpp"
@@ -187,6 +191,52 @@ protected:
     int die2Value = 1;
 
     int movementPoints = 0;
+
+    // -------------------------------
+    // Game loop state
+    // -------------------------------
+
+    enum class GamePhase {
+        WaitingForRoll,
+        Moving,
+        GameOver
+    };
+
+    enum class BoardItemType {
+        Empty,
+        Obstacle,
+        Rook,
+        Bishop,
+        Knight,
+        Queen
+    };
+
+    struct BoardItem {
+        bool active = false;
+        BoardItemType type = BoardItemType::Empty;
+        int row = 0;
+        int col = 0;
+        int instanceId = -1;
+    };
+
+    // These are the already-loaded chess piece instances.
+    // They are reused as random enemies/obstacles.
+    // In the current scene, lamps start at 19, so 7-18 are available board pieces.
+    static constexpr int DYNAMIC_ITEM_COUNT = 12;
+
+    std::array<int, DYNAMIC_ITEM_COUNT> dynamicItemInstanceIds = {
+        7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+    };
+
+    std::array<BoardItem, DYNAMIC_ITEM_COUNT> dynamicItems{};
+
+    GamePhase gamePhase = GamePhase::WaitingForRoll;
+
+    int roundNumber = 1;
+    int roundsSurvived = 0;
+    int highScore = 0;
+
+    std::string statusMessage = "Roll dice to start.";
 
     // Board/token height is around y = 0.38 in this scene.
     // The dice collision uses the center of the die, so the center must be ABOVE the board.
@@ -481,7 +531,10 @@ protected:
             std::cout << "ERROR LOADING THE SCENE\n";
             exit(0);
         }
+        loadHighScore();
+        resetGame();
 
+        std::cout << "Scene instance count: " << SC.TI[0].InstanceCount << "\n";
         txt.init(this, windowWidth, windowHeight);
 
         submitCommandBuffer("main", 0, populateCommandBufferAccess, this);
@@ -658,6 +711,7 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
 
         updateTokenInstance();
         updateDiceInstances(deltaT);
+        updateDynamicBoardItemInstances();
         // updateLampInstances();
 
         glm::mat4 lightViewProj = computeLightViewProj();
@@ -722,20 +776,24 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
 
         if (elapsedT > 1.0f) {
             float fps = static_cast<float>(countedFrames) / elapsedT;
-
             std::ostringstream oss;
-            oss << "FPS: " << fps << "\n";
+
+            oss << "Round: " << roundNumber << "\n";
+            oss << "Survived: " << roundsSurvived << "\n";
+            oss << "High score: " << highScore << "\n";
             oss << "Dice: " << die1Value << " + " << die2Value << "\n";
             oss << "Move points: " << movementPoints << "\n";
 
-            if (diceRolling) {
-                oss << "Rolling...\n";
-            } else {
+            if (gamePhase == GamePhase::WaitingForRoll) {
+                oss << "State: ROLL\n";
                 oss << "SPACE: roll dice\n";
+            } else if (gamePhase == GamePhase::Moving) {
+                oss << "State: MOVE\n";
+                oss << "I/J/K/L: move player\n";
+            } else {
+                oss << "State: GAME OVER\n";
+                oss << "R: restart\n";
             }
-
-            oss << "I/J/K/L: move token\n";
-            oss << "1/2/3/4: toggle lights\n";
 
             oss << "Lights: ";
             for (int i = 0; i < NUM_CORNER_LIGHTS; i++) {
@@ -746,6 +804,8 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
                 }
             }
             oss << "\n";
+
+            oss << statusMessage << "\n";
 
             txt.print(
                 1.0f, 1.0f,
@@ -776,6 +836,10 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
     }
 
     void startDiceRoll() {
+        if (gamePhase != GamePhase::WaitingForRoll) {
+            return;
+        }
+
         if (diceRolling) {
             return;
         }
@@ -783,11 +847,12 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
         diceRolling = true;
         diceRollTimer = 0.0f;
 
-        // Old movement points are removed while rolling.
         movementPoints = 0;
 
         die1Sleeping = false;
         die2Sleeping = false;
+
+        // rest of your existing dice code...
 
         // Start positions, slightly above the board.
         die1Position = glm::vec3(
@@ -1186,18 +1251,25 @@ void updateSingleDiePhysics(
         }
     }
 
+    void finishDiceRoll() {
+        diceRolling = false;
 
-void finishDiceRoll() {
-    diceRolling = false;
+        movementPoints = die1Value + die2Value;
+        gamePhase = GamePhase::Moving;
 
-    movementPoints = die1Value + die2Value;
+        std::ostringstream oss;
+        oss << "Rolled "
+            << die1Value
+            << " + "
+            << die2Value
+            << " = "
+            << movementPoints
+            << ". Move the player.";
 
-    std::cout
-        << "Dice result: "
-        << die1Value << " + " << die2Value
-        << " = " << movementPoints
-        << " movement points\n";
-}
+        statusMessage = oss.str();
+
+        std::cout << statusMessage << "\n";
+    }
     // -------------------------------
     // Main game/camera logic
     // -------------------------------
@@ -1220,7 +1292,365 @@ void finishDiceRoll() {
             lightToggleCooldown[lightIndex] = 0.30f;
         }
     }
+    void loadHighScore() {
+        std::ifstream file("highscore.txt");
 
+        if (file.is_open()) {
+            file >> highScore;
+        }
+    }
+
+    void saveHighScore() {
+        std::ofstream file("highscore.txt");
+
+        if (file.is_open()) {
+            file << highScore;
+        }
+    }
+
+    const char* boardItemTypeName(BoardItemType type) const {
+        switch (type) {
+        case BoardItemType::Obstacle:
+            return "Obstacle";
+        case BoardItemType::Rook:
+            return "Rook";
+        case BoardItemType::Bishop:
+            return "Bishop";
+        case BoardItemType::Knight:
+            return "Knight";
+        case BoardItemType::Queen:
+            return "Queen";
+        default:
+            return "Empty";
+        }
+    }
+
+
+    bool isDynamicItemInstance(int instanceId) const {
+        for (const BoardItem& item : dynamicItems) {
+            if (item.instanceId == instanceId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    BoardItemType dynamicItemTypeFromInstance(int instanceId) const {
+        for (const BoardItem& item : dynamicItems) {
+            if (item.instanceId == instanceId) {
+                return item.type;
+            }
+        }
+
+        return BoardItemType::Empty;
+    }
+
+
+    bool isFixedBlocked(int row, int col) const {
+        // Existing fixed obstacles.
+        return (row == 2 && col == 3) ||
+               (row == 4 && col == 5);
+    }
+
+
+    bool isOccupiedByDynamicItem(int row, int col) const {
+        for (const BoardItem& item : dynamicItems) {
+            if (item.active && item.row == row && item.col == col) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+BoardItemType randomBoardItemType() {
+    // 0 = obstacle, 1 = rook, 2 = bishop, 3 = knight, 4 = queen
+    std::uniform_int_distribution<int> typeDistribution(0, 4);
+    int value = typeDistribution(randomEngine);
+
+    switch (value) {
+    case 0:
+        return BoardItemType::Obstacle;
+    case 1:
+        return BoardItemType::Rook;
+    case 2:
+        return BoardItemType::Bishop;
+    case 3:
+        return BoardItemType::Knight;
+    case 4:
+    default:
+        return BoardItemType::Queen;
+    }
+}
+
+
+int findInactiveBoardItemSlot() const {
+    for (int i = 0; i < DYNAMIC_ITEM_COUNT; i++) {
+        if (!dynamicItems[i].active) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+
+void spawnRandomBoardItem() {
+    int slot = findInactiveBoardItemSlot();
+
+    if (slot < 0) {
+        statusMessage = "Board is full. Survive as long as possible.";
+        return;
+    }
+
+    std::vector<glm::ivec2> freeCells;
+
+    for (int row = 0; row < GRID_ROWS; row++) {
+        for (int col = 0; col < GRID_COLS; col++) {
+            if (row == tokenRow && col == tokenCol) {
+                continue;
+            }
+
+            if (isFixedBlocked(row, col)) {
+                continue;
+            }
+
+            if (isOccupiedByDynamicItem(row, col)) {
+                continue;
+            }
+
+            freeCells.push_back(glm::ivec2(row, col));
+        }
+    }
+
+    if (freeCells.empty()) {
+        statusMessage = "No free cells left.";
+        return;
+    }
+
+    std::uniform_int_distribution<int> cellDistribution(
+        0,
+        static_cast<int>(freeCells.size()) - 1
+    );
+
+    glm::ivec2 chosenCell = freeCells[cellDistribution(randomEngine)];
+
+    dynamicItems[slot].active = true;
+    dynamicItems[slot].type = randomBoardItemType();
+    dynamicItems[slot].row = chosenCell.x;
+    dynamicItems[slot].col = chosenCell.y;
+    dynamicItems[slot].instanceId = dynamicItemInstanceIds[slot];
+
+    std::ostringstream oss;
+    oss << "Round " << roundNumber
+        << ": spawned "
+        << boardItemTypeName(dynamicItems[slot].type)
+        << " at ("
+        << dynamicItems[slot].row
+        << ", "
+        << dynamicItems[slot].col
+        << "). Roll dice.";
+
+    statusMessage = oss.str();
+
+    std::cout << statusMessage << "\n";
+}
+
+    int signInt(int value) const {
+    if (value > 0) {
+        return 1;
+    }
+
+    if (value < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+bool lineClearBetween(int fromRow, int fromCol, int toRow, int toCol) const {
+    int dRow = signInt(toRow - fromRow);
+    int dCol = signInt(toCol - fromCol);
+
+    int row = fromRow + dRow;
+    int col = fromCol + dCol;
+
+    while (row != toRow || col != toCol) {
+        if (isFixedBlocked(row, col)) {
+            return false;
+        }
+
+        if (isOccupiedByDynamicItem(row, col)) {
+            return false;
+        }
+
+        row += dRow;
+        col += dCol;
+    }
+
+    return true;
+}
+
+
+bool boardItemAttacksPlayer(const BoardItem& item) const {
+    if (!item.active) {
+        return false;
+    }
+
+    if (item.type == BoardItemType::Obstacle) {
+        return false;
+    }
+
+    int dRow = tokenRow - item.row;
+    int dCol = tokenCol - item.col;
+
+    int absRow = std::abs(dRow);
+    int absCol = std::abs(dCol);
+
+    switch (item.type) {
+    case BoardItemType::Rook:
+        if (dRow == 0 || dCol == 0) {
+            return lineClearBetween(item.row, item.col, tokenRow, tokenCol);
+        }
+        return false;
+
+    case BoardItemType::Bishop:
+        if (absRow == absCol) {
+            return lineClearBetween(item.row, item.col, tokenRow, tokenCol);
+        }
+        return false;
+
+    case BoardItemType::Queen:
+        if (dRow == 0 || dCol == 0 || absRow == absCol) {
+            return lineClearBetween(item.row, item.col, tokenRow, tokenCol);
+        }
+        return false;
+
+    case BoardItemType::Knight:
+        return (absRow == 2 && absCol == 1) ||
+               (absRow == 1 && absCol == 2);
+
+    default:
+        return false;
+    }
+}
+
+
+bool anyBoardItemAttacksPlayer(BoardItem* attackingItem = nullptr) {
+    for (BoardItem& item : dynamicItems) {
+        if (boardItemAttacksPlayer(item)) {
+            if (attackingItem != nullptr) {
+                *attackingItem = item;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+}
+void hideInactiveDynamicItems() {
+    if (SC.TI == nullptr) {
+        return;
+    }
+
+    for (const BoardItem& item : dynamicItems) {
+        if (item.instanceId < 0) {
+            continue;
+        }
+
+        if (item.instanceId >= SC.TI[0].InstanceCount) {
+            continue;
+        }
+
+        if (!item.active) {
+            SC.TI[0].I[item.instanceId].Wm =
+                glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -20.0f, 0.0f)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+        }
+    }
+}
+
+
+void resetGame() {
+    tokenRow = 6;
+    tokenCol = 1;
+
+    movementPoints = 0;
+    diceRolling = false;
+    die1Sleeping = true;
+    die2Sleeping = true;
+
+    die1Value = 1;
+    die2Value = 1;
+
+    roundNumber = 1;
+    roundsSurvived = 0;
+    gamePhase = GamePhase::WaitingForRoll;
+
+    for (int i = 0; i < DYNAMIC_ITEM_COUNT; i++) {
+        dynamicItems[i].active = false;
+        dynamicItems[i].type = BoardItemType::Empty;
+        dynamicItems[i].row = 0;
+        dynamicItems[i].col = 0;
+        dynamicItems[i].instanceId = dynamicItemInstanceIds[i];
+    }
+
+    hideInactiveDynamicItems();
+
+    spawnRandomBoardItem();
+
+    statusMessage = "New game. Round 1: roll dice.";
+}
+
+
+void gameOver(const BoardItem& attacker) {
+    gamePhase = GamePhase::GameOver;
+    movementPoints = 0;
+    diceRolling = false;
+
+    if (roundsSurvived > highScore) {
+        highScore = roundsSurvived;
+        saveHighScore();
+    }
+
+    std::ostringstream oss;
+    oss << "GAME OVER! "
+        << boardItemTypeName(attacker.type)
+        << " attacks from ("
+        << attacker.row
+        << ", "
+        << attacker.col
+        << "). Press R to restart.";
+
+    statusMessage = oss.str();
+
+    std::cout << statusMessage << "\n";
+}
+
+
+void finishPlayerMovement() {
+    BoardItem attacker{};
+
+    if (anyBoardItemAttacksPlayer(&attacker)) {
+        gameOver(attacker);
+        return;
+    }
+
+    roundsSurvived++;
+    roundNumber++;
+
+    gamePhase = GamePhase::WaitingForRoll;
+    movementPoints = 0;
+
+    spawnRandomBoardItem();
+}
+    bool isBlocked(int row, int col) const {
+        return isFixedBlocked(row, col) ||
+               isOccupiedByDynamicItem(row, col);
+    }
 
     float GameLogic() {
         const float FOVy = glm::radians(45.0f);
@@ -1233,7 +1663,12 @@ void finishDiceRoll() {
         bool fire = false;
 
         getSixAxis(deltaT, m, r, fire);
-
+        if (
+            gamePhase == GamePhase::GameOver &&
+            glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS
+        ) {
+            resetGame();
+        }
         // -------------------------------
         // Token movement + light toggles
         // -------------------------------
@@ -1281,6 +1716,7 @@ void finishDiceRoll() {
         rollCooldown -= deltaT;
 
         if (
+            gamePhase == GamePhase::WaitingForRoll &&
             rollCooldown <= 0.0f &&
             glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS
         ) {
@@ -1367,6 +1803,10 @@ void finishDiceRoll() {
     // Grid/token logic
     // -------------------------------
 
+    // -------------------------------
+    // Grid/token logic
+    // -------------------------------
+
     glm::vec3 gridToWorld(int row, int col) const {
         float x =
             (static_cast<float>(col) - (GRID_COLS - 1) * 0.5f) * CELL_SIZE;
@@ -1384,15 +1824,14 @@ void finishDiceRoll() {
     }
 
 
-    bool isBlocked(int row, int col) const {
-        return (row == 2 && col == 3) ||
-               (row == 4 && col == 5);
-    }
-
-
     void tryMoveToken(int dRow, int dCol) {
+        if (gamePhase != GamePhase::Moving) {
+            std::cout << "Roll dice first.\n";
+            return;
+        }
+
         if (movementPoints <= 0) {
-            std::cout << "No movement points. Roll dice with SPACE first.\n";
+            std::cout << "No movement points left.\n";
             return;
         }
 
@@ -1406,7 +1845,7 @@ void finishDiceRoll() {
 
         if (isBlocked(newRow, newCol)) {
             std::cout
-                << "Blocked: obstacle at cell ("
+                << "Blocked: occupied cell ("
                 << newRow << ", " << newCol << ")\n";
             return;
         }
@@ -1421,13 +1860,16 @@ void finishDiceRoll() {
             << tokenRow << ", " << tokenCol << ")\n"
             << "Movement points left: "
             << movementPoints << "\n";
+
+        if (movementPoints <= 0) {
+            finishPlayerMovement();
+        }
     }
 
 
     // -------------------------------
     // Model matrices
     // -------------------------------
-
     glm::mat4 tokenModelMatrix() const {
         glm::vec3 pos = gridToWorld(tokenRow, tokenCol);
 
@@ -1464,7 +1906,46 @@ void finishDiceRoll() {
         return M;
     }
 
+glm::mat4 boardItemModelMatrix(const BoardItem& item) const {
+    glm::vec3 pos = gridToWorld(item.row, item.col);
 
+    glm::mat4 M = glm::mat4(1.0f);
+
+    M = glm::translate(M, pos);
+
+    // Most chess GLTF pieces in the scene were originally rotated -90 degrees.
+    M = glm::rotate(M, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    // Small enough to fit cleanly inside one board cell.
+    M = glm::scale(M, glm::vec3(0.13f, 0.13f, 0.13f));
+
+    return M;
+}
+
+
+void updateDynamicBoardItemInstances() {
+    if (SC.TI == nullptr) {
+        return;
+    }
+
+    for (const BoardItem& item : dynamicItems) {
+        if (item.instanceId < 0) {
+            continue;
+        }
+
+        if (item.instanceId >= SC.TI[0].InstanceCount) {
+            continue;
+        }
+
+        if (item.active) {
+            SC.TI[0].I[item.instanceId].Wm = boardItemModelMatrix(item);
+        } else {
+            SC.TI[0].I[item.instanceId].Wm =
+                glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -20.0f, 0.0f)) *
+                glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+        }
+    }
+}
     glm::vec3 lampPosition() const {
         // The shadow map still uses light 1.
         // The scene has four lights for illumination, but only one shadow-casting light.
@@ -1505,6 +1986,29 @@ void finishDiceRoll() {
         return glm::vec4(0.05f, 0.04f, 0.03f, 0.75f);
     }
     glm::vec4 objectMaterialColor(int instanceId) const {
+    if (isDynamicItemInstance(instanceId)) {
+        BoardItemType type = dynamicItemTypeFromInstance(instanceId);
+
+        switch (type) {
+        case BoardItemType::Obstacle:
+            return glm::vec4(0.28f, 0.16f, 0.06f, 0.85f);
+
+        case BoardItemType::Rook:
+            return glm::vec4(0.75f, 0.75f, 0.78f, 1.0f);
+
+        case BoardItemType::Bishop:
+            return glm::vec4(0.55f, 0.80f, 1.00f, 1.0f);
+
+        case BoardItemType::Knight:
+            return glm::vec4(1.00f, 0.65f, 0.20f, 1.0f);
+
+        case BoardItemType::Queen:
+            return glm::vec4(1.00f, 0.15f, 0.15f, 1.0f);
+
+        default:
+            return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+        }
+    }
         switch (instanceId) {
         case 0:
             // table_surface
