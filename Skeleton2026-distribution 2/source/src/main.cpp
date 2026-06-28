@@ -207,7 +207,8 @@ protected:
         Rook,
         Bishop,
         Knight,
-        Queen
+        Queen,
+        King
     };
 
     struct BoardItem {
@@ -1492,6 +1493,8 @@ void updateSingleDiePhysics(
             return "Knight";
         case BoardItemType::Queen:
             return "Queen";
+        case BoardItemType::King:
+            return "King";
         default:
             return "Empty";
         }
@@ -1538,10 +1541,12 @@ void updateSingleDiePhysics(
         case 9:
         case 10:
         case 11:
+        case 12:
         case 14:
         case 15:
         case 16:
         case 17:
+        case 18:
             return true;
 
         default:
@@ -1579,10 +1584,15 @@ void updateSingleDiePhysics(
         case 17:
             return BoardItemType::Queen;
 
+        case 12:
+        case 18:
+            return BoardItemType::King;
+
         default:
             return BoardItemType::Empty;
         }
     }
+
     bool isCurrentAttackerInstance(int instanceId) const {
         return hasCurrentAttacker &&
                currentAttacker.active &&
@@ -1773,6 +1783,10 @@ bool boardItemAttacksPlayer(const BoardItem& item) const {
     case BoardItemType::Knight:
         return (absRow == 2 && absCol == 1) ||
                (absRow == 1 && absCol == 2);
+
+    case BoardItemType::King:
+        return (absRow <= 1 && absCol <= 1) &&
+               !(absRow == 0 && absCol == 0);
 
     default:
         return false;
@@ -2209,26 +2223,6 @@ void finishPlayerMovement() {
         }
     }
 
-
-    glm::mat4 dicePipModelMatrix(
-        const glm::vec3& diePosition,
-        const glm::vec2& offset
-    ) const {
-        glm::vec3 pipPosition = glm::vec3(
-            diePosition.x + offset.x,
-            diePosition.y + 0.235f,
-            diePosition.z + offset.y
-        );
-
-        glm::mat4 M = glm::mat4(1.0f);
-
-        M = glm::translate(M, pipPosition);
-
-        // Small raised black cube sitting on top of the die.
-        M = glm::scale(M, glm::vec3(0.045f, 0.010f, 0.045f));
-
-        return M;
-    }
     glm::mat4 diceModelMatrix(
         const glm::vec3& position,
         const glm::vec3& rotation,
@@ -2321,34 +2315,30 @@ void finishPlayerMovement() {
         return glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -20.0f, 0.0f)) *
                glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
     }
-void updateDynamicBoardItemInstances() {
-    if (SC.TI == nullptr) {
-        return;
-    }
 
-    for (const BoardItem& item : dynamicItems) {
-        if (item.instanceId < 0) {
-            continue;
+    void updateDynamicBoardItemInstances() {
+        if (SC.TI == nullptr) {
+            return;
         }
 
-        if (item.instanceId >= SC.TI[0].InstanceCount) {
-            continue;
-        }
+        for (const BoardItem& item : dynamicItems) {
+            if (item.instanceId < 0) {
+                continue;
+            }
 
-        if (item.active) {
-            SC.TI[0].I[item.instanceId].Wm = boardItemModelMatrix(item);
-        } else {
-            SC.TI[0].I[item.instanceId].Wm =
-                glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -20.0f, 0.0f)) *
-                glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+            if (item.instanceId >= SC.TI[0].InstanceCount) {
+                continue;
+            }
+
+            if (item.active) {
+                SC.TI[0].I[item.instanceId].Wm = boardItemModelMatrix(item);
+            } else {
+                SC.TI[0].I[item.instanceId].Wm =
+                    glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -20.0f, 0.0f)) *
+                    glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+            }
         }
     }
-}
-    glm::vec3 lampPosition(int lightIndex) const {
-        return glm::vec3(cornerLightPositions[lightIndex]);
-    }
-
-
 
     glm::mat4 computeLightViewProj(int lightIndex) const {
         glm::vec3 lightPos = glm::vec3(cornerLightPositions[lightIndex]);
@@ -2378,7 +2368,6 @@ void updateDynamicBoardItemInstances() {
 
         return lightProj * lightView;
     }
-
 
 
     glm::vec4 lampBulbMaterial(int lightIndex) const {
@@ -2423,6 +2412,9 @@ void updateDynamicBoardItemInstances() {
             case BoardItemType::Queen:
                 return glm::vec4(1.00f, 0.15f, 0.15f, 1.0f);
 
+            case BoardItemType::King:
+                return glm::vec4(0.15f, 0.15f, 0.15f, 1.0f);
+
             default:
                 return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
             }
@@ -2458,23 +2450,6 @@ void updateDynamicBoardItemInstances() {
 
         case LAMP_4_BULB_INSTANCE_INDEX:
             return lampBulbMaterial(3);
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-        case 12:
-            // white pieces
-            return glm::vec4(0.95f, 0.95f, 0.90f, 1.0f);
-
-        case 13:
-        case 14:
-        case 15:
-        case 16:
-        case 17:
-        case 18:
-            // black pieces
-            return glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
         case DICE_TRAY_INDEX:
             // dice tray
             return glm::vec4(0.32f, 0.18f, 0.08f, 0.55f);
@@ -2501,50 +2476,24 @@ void updateDynamicBoardItemInstances() {
             diceModelMatrix(die2Position, die2Rotation, die2Value, true);
     }
 
-    void updateOneDiePips(
-        int startIndex,
-        int value,
-        const glm::vec3& diePosition
-    ) {
+
+
+    void updateDicePipInstances() {
         if (SC.TI == nullptr) {
             return;
         }
 
-        std::vector<glm::vec2> offsets = pipOffsetsForValue(value);
+        if (SC.TI[0].InstanceCount <= LAST_DICE_PIP_INDEX) {
+            return;
+        }
 
-        for (int i = 0; i < PIPS_PER_DIE; i++) {
-            int instanceId = startIndex + i;
-
-            if (instanceId >= SC.TI[0].InstanceCount) {
-                continue;
-            }
-
-            // Hide pips while dice are rolling, because the dice are spinning.
-            // When the dice stop, the pips appear and show the final true value.
-            if (diceRolling || i >= static_cast<int>(offsets.size())) {
-                SC.TI[0].I[instanceId].Wm = hiddenModelMatrix();
-            } else {
-                SC.TI[0].I[instanceId].Wm =
-                    dicePipModelMatrix(diePosition, offsets[i]);
-            }
+        for (int instanceId = DIE_1_PIP_START_INDEX;
+             instanceId <= LAST_DICE_PIP_INDEX;
+             instanceId++) {
+            SC.TI[0].I[instanceId].Wm = hiddenModelMatrix();
         }
     }
 
-void updateDicePipInstances() {
-    if (SC.TI == nullptr) {
-        return;
-    }
-
-    if (SC.TI[0].InstanceCount <= LAST_DICE_PIP_INDEX) {
-        return;
-    }
-
-    for (int instanceId = DIE_1_PIP_START_INDEX;
-         instanceId <= LAST_DICE_PIP_INDEX;
-         instanceId++) {
-        SC.TI[0].I[instanceId].Wm = hiddenModelMatrix();
-    }
-}
     void updateTokenInstance() {
         if (SC.TI == nullptr) {
             return;
@@ -2555,61 +2504,6 @@ void updateDicePipInstances() {
         }
 
         SC.TI[0].I[TOKEN_INSTANCE_INDEX].Wm = tokenModelMatrix();
-    }
-    glm::mat4 lampBulbModelMatrix(int lightIndex) const {
-        glm::vec3 lampPos = glm::vec3(cornerLightPositions[lightIndex]);
-
-        glm::mat4 M = glm::mat4(1.0f);
-
-        M = glm::translate(M, lampPos);
-        M = glm::scale(M, glm::vec3(0.34f, 0.34f, 0.34f));
-
-        return M;
-    }
-
-
-    glm::mat4 lampPostModelMatrix(int lightIndex) const {
-        glm::vec3 lampPos = glm::vec3(cornerLightPositions[lightIndex]);
-
-        float baseY = 0.05f;
-        float postHeight = std::max(0.25f, lampPos.y - baseY);
-        float centerY = baseY + postHeight * 0.5f;
-
-        glm::mat4 M = glm::mat4(1.0f);
-
-        M = glm::translate(
-            M,
-            glm::vec3(lampPos.x, centerY, lampPos.z)
-        );
-
-        M = glm::scale(
-            M,
-            glm::vec3(0.10f, postHeight, 0.10f)
-        );
-
-        return M;
-    }
-
-    void updateLampInstances() {
-        if (SC.TI == nullptr) {
-            return;
-        }
-
-        if (SC.TI[0].InstanceCount <= LAMP_4_BULB_INSTANCE_INDEX) {
-            return;
-        }
-
-        SC.TI[0].I[LAMP_1_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(0);
-        SC.TI[0].I[LAMP_1_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(0);
-
-        SC.TI[0].I[LAMP_2_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(1);
-        SC.TI[0].I[LAMP_2_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(1);
-
-        SC.TI[0].I[LAMP_3_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(2);
-        SC.TI[0].I[LAMP_3_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(2);
-
-        SC.TI[0].I[LAMP_4_POST_INSTANCE_INDEX].Wm = lampPostModelMatrix(3);
-        SC.TI[0].I[LAMP_4_BULB_INSTANCE_INDEX].Wm = lampBulbModelMatrix(3);
     }
 
 };

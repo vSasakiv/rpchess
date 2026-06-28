@@ -335,7 +335,7 @@
 					"model": "tray",
 					"texture": ["tex"],
 					"translate": [5.8, 0.2, 0.0],
-					"scale": [0.3, 0.3, 0.3]
+					"scale": [0.4, 0.3, 0.4]
 				},
 				{
 					"id": "die_1_pip_1",
