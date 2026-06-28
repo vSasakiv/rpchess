@@ -921,7 +921,7 @@ protected:
         SC.TI[0].I[instanceId].DS[4][1]->map(currentImage, &ubo, 0);
     }
 
-        debugDumpLightsAndInstance(TOKEN_INSTANCE_INDEX);
+
         updateHudText(deltaT);
     txt.updateCommandBuffer();
 }
@@ -988,68 +988,7 @@ protected:
         }
     }
 
-void debugDumpLightsAndInstance(int instanceId) {
-        static bool dumped = false;
-        if (dumped) {
-            return;
-        }
-        dumped = true;
 
-        std::cout << "\n===== DEBUG DUMP =====\n";
-
-        for (int i = 0; i < NUM_CORNER_LIGHTS; i++) {
-            glm::vec3 pos = glm::vec3(cornerLightPositions[i]);
-            glm::mat4 vp = computeLightViewProj(i);
-
-            std::cout << "Light " << i
-                       << " pos(" << pos.x << "," << pos.y << "," << pos.z << ")"
-                       << " enabled=" << cornerLightEnabled[i] << "\n";
-
-            // Project the board center and the target instance's world position
-            // through this light's view-proj to see where they land in [-1,1] clip space.
-            glm::vec4 clipCenter = vp * glm::vec4(0.0f, 0.35f, 0.0f, 1.0f);
-            if (clipCenter.w != 0.0f) {
-                glm::vec3 ndc = glm::vec3(clipCenter) / clipCenter.w;
-                std::cout << "    board center NDC: ("
-                          << ndc.x << ", " << ndc.y << ", " << ndc.z << ")\n";
-            }
-
-            if (instanceId >= 0 && instanceId < SC.TI[0].InstanceCount) {
-                glm::vec3 worldPos = glm::vec3(
-                    SC.TI[0].I[instanceId].Wm[3][0],
-                    SC.TI[0].I[instanceId].Wm[3][1],
-                    SC.TI[0].I[instanceId].Wm[3][2]
-                );
-
-                glm::vec4 clipInst = vp * glm::vec4(worldPos, 1.0f);
-                if (clipInst.w != 0.0f) {
-                    glm::vec3 ndcInst = glm::vec3(clipInst) / clipInst.w;
-                    std::cout << "    instance " << instanceId
-                              << " world(" << worldPos.x << "," << worldPos.y << "," << worldPos.z << ")"
-                              << " NDC(" << ndcInst.x << "," << ndcInst.y << "," << ndcInst.z << ")\n";
-                }
-            }
-        }
-
-        // Dump the pipeline pointers used per shadow pass, to verify
-        // they are 4 distinct objects, not aliased.
-        for (int passId = 0; passId < 4; passId++) {
-            Pipeline* p = PRs[0].PT[passId].P;
-            std::cout << "Pass " << passId << " pipeline ptr: " << p
-                      << "  Pshadow[" << passId << "] ptr: " << &Pshadow[passId] << "\n";
-        }
-
-        // Dump the shadow map texture views actually bound into the main pass,
-        // to verify shadowMap0..3 point at 4 distinct images, not the same one.
-        for (int i = 0; i < 4; i++) {
-            VkDescriptorImageInfo info = RPshadow[i].attachments[0].getViewAndSampler();
-            std::cout << "Shadow map " << i
-                      << " imageView: " << info.imageView
-                      << " sampler: " << info.sampler << "\n";
-        }
-
-        std::cout << "===== END DEBUG DUMP =====\n\n";
-    }
     // -------------------------------
     // Dice logic
     // -------------------------------
