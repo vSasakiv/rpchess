@@ -67,6 +67,7 @@
 			"model": "assets/models/tray.obj",
 			"format": "OBJ"
 		},
+
 		{
 			"id": "tree_stump",
 			"VD": "VDposNormUV",
@@ -335,6 +336,90 @@
 					"texture": ["tex"],
 					"translate": [5.8, 0.2, 0.0],
 					"scale": [0.3, 0.3, 0.3]
+				},
+				{
+					"id": "die_1_pip_1",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_1_pip_2",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_1_pip_3",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_1_pip_4",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_1_pip_5",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_1_pip_6",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_2_pip_1",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_2_pip_2",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_2_pip_3",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_2_pip_4",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_2_pip_5",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
+				},
+				{
+					"id": "die_2_pip_6",
+					"model": "cube",
+					"texture": ["tex"],
+					"translate": [0.0, -20.0, 0.0],
+					"scale": [0.04, 0.01, 0.04]
 				}
 
 			]

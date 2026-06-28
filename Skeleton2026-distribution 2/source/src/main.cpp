@@ -135,6 +135,10 @@ protected:
     static constexpr int LAMP_4_POST_INSTANCE_INDEX = 25;
     static constexpr int LAMP_4_BULB_INSTANCE_INDEX = 26;
     static constexpr int DICE_TRAY_INDEX = 27;
+    static constexpr int DIE_1_PIP_START_INDEX = 28;
+    static constexpr int DIE_2_PIP_START_INDEX = 34;
+    static constexpr int PIPS_PER_DIE = 6;
+    static constexpr int LAST_DICE_PIP_INDEX = DIE_2_PIP_START_INDEX + PIPS_PER_DIE - 1;
 
 
     int tokenRow = 6;
@@ -491,9 +495,9 @@ protected:
         // Descriptor pool size.
         // We have several scene objects, so this must be larger than the starter default.
 
-        DPSZs.uniformBlocksInPool = 80;
-        DPSZs.texturesInPool = 80;
-        DPSZs.setsInPool = 80;
+        DPSZs.uniformBlocksInPool = 120;
+        DPSZs.texturesInPool = 120;
+        DPSZs.setsInPool = 120;
 
         // Scene support names.
         // These must match scene.json.
@@ -664,7 +668,8 @@ bool instanceCastsShadow(int instanceId) const {
             instanceId == 0 ||
             instanceId == 1 ||
             instanceId == DICE_TRAY_INDEX ||
-            isLampInstance(instanceId)
+            isLampInstance(instanceId) ||
+            isDicePipInstance(instanceId)
         ) {
             return false;
         }
@@ -724,6 +729,7 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
 
         updateTokenInstance();
         updateDiceInstances(deltaT);
+        updateDicePipInstances();
         updateDynamicBoardItemInstances();
         // updateLampInstances();
 
@@ -1212,57 +1218,66 @@ void updateSingleDiePhysics(
         rotation = finalDiceRotation(value, secondDie);
     }
 
-
     glm::vec3 finalDiceRotation(int value, bool secondDie) const {
-        // The die must stop on clean 90-degree rotations.
-        // That makes the cube visually aligned with the board plane.
+        // This mapping matches the actual textured cube from your OBJ + UV layout:
         //
-        // We vary only by 90-degree steps so it looks different per result,
-        // but never ends tilted into or above the ground.
-        float yTurn = secondDie ? glm::radians(90.0f) : glm::radians(0.0f);
+        // top    = 2
+        // bottom = 5
+        // front  = 4
+        // back   = 3
+        // right  = 1
+        // left   = 6
+        //
+        // We therefore rotate the cube so the requested number becomes the top face.
 
         switch (value) {
         case 1:
+            // right -> top
             return glm::vec3(
-                glm::radians(0.0f),
-                yTurn,
-                glm::radians(0.0f)
+                0.0f,
+                0.0f,
+                glm::radians(90.0f)
             );
 
         case 2:
+            // already on top
             return glm::vec3(
-                glm::radians(90.0f),
-                yTurn,
-                glm::radians(0.0f)
+                0.0f,
+                0.0f,
+                0.0f
             );
 
         case 3:
+            // back -> top
             return glm::vec3(
-                glm::radians(0.0f),
-                yTurn,
-                glm::radians(90.0f)
+                glm::radians(90.0f),
+                0.0f,
+                0.0f
             );
 
         case 4:
+            // front -> top
             return glm::vec3(
-                glm::radians(0.0f),
-                yTurn + glm::radians(90.0f),
-                glm::radians(90.0f)
+                glm::radians(-90.0f),
+                0.0f,
+                0.0f
             );
 
         case 5:
+            // bottom -> top
             return glm::vec3(
-                glm::radians(270.0f),
-                yTurn,
-                glm::radians(0.0f)
+                glm::radians(180.0f),
+                0.0f,
+                0.0f
             );
 
         case 6:
         default:
+            // left -> top
             return glm::vec3(
-                glm::radians(180.0f),
-                yTurn,
-                glm::radians(0.0f)
+                0.0f,
+                0.0f,
+                glm::radians(-90.0f)
             );
         }
     }
@@ -1977,7 +1992,78 @@ void finishPlayerMovement() {
                glm::scale(glm::mat4(1.0f), glm::vec3(0.03f, 0.03f, 0.03f));
     }
 
+    std::vector<glm::vec2> pipOffsetsForValue(int value) const {
+        float o = 0.105f;
 
+        switch (value) {
+        case 1:
+            return {
+                glm::vec2(0.0f, 0.0f)
+            };
+
+        case 2:
+            return {
+                glm::vec2(-o, -o),
+                glm::vec2( o,  o)
+            };
+
+        case 3:
+            return {
+                glm::vec2(-o, -o),
+                glm::vec2(0.0f, 0.0f),
+                glm::vec2( o,  o)
+            };
+
+        case 4:
+            return {
+                glm::vec2(-o, -o),
+                glm::vec2( o, -o),
+                glm::vec2(-o,  o),
+                glm::vec2( o,  o)
+            };
+
+        case 5:
+            return {
+                glm::vec2(-o, -o),
+                glm::vec2( o, -o),
+                glm::vec2(0.0f, 0.0f),
+                glm::vec2(-o,  o),
+                glm::vec2( o,  o)
+            };
+
+        case 6:
+        default:
+            return {
+                glm::vec2(-o, -o),
+                glm::vec2( o, -o),
+                glm::vec2(-o, 0.0f),
+                glm::vec2( o, 0.0f),
+                glm::vec2(-o,  o),
+                glm::vec2( o,  o)
+            };
+        }
+    }
+
+
+    glm::mat4 dicePipModelMatrix(
+        const glm::vec3& diePosition,
+        const glm::vec2& offset
+    ) const {
+        glm::vec3 pipPosition = glm::vec3(
+            diePosition.x + offset.x,
+            diePosition.y + 0.235f,
+            diePosition.z + offset.y
+        );
+
+        glm::mat4 M = glm::mat4(1.0f);
+
+        M = glm::translate(M, pipPosition);
+
+        // Small raised black cube sitting on top of the die.
+        M = glm::scale(M, glm::vec3(0.045f, 0.010f, 0.045f));
+
+        return M;
+    }
     glm::mat4 diceModelMatrix(
         const glm::vec3& position,
         const glm::vec3& rotation,
@@ -2059,7 +2145,16 @@ void finishPlayerMovement() {
         return M;
     }
 
+    bool isDicePipInstance(int instanceId) const {
+        return instanceId >= DIE_1_PIP_START_INDEX &&
+               instanceId <= LAST_DICE_PIP_INDEX;
+    }
 
+
+    glm::mat4 hiddenModelMatrix() const {
+        return glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -20.0f, 0.0f)) *
+               glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+    }
 void updateDynamicBoardItemInstances() {
     if (SC.TI == nullptr) {
         return;
@@ -2123,6 +2218,9 @@ void updateDynamicBoardItemInstances() {
         return glm::vec4(0.05f, 0.04f, 0.03f, 0.75f);
     }
     glm::vec4 objectMaterialColor(int instanceId) const {
+        if (isDicePipInstance(instanceId)) {
+            return glm::vec4(0.01f, 0.01f, 0.01f, 1.0f);
+        }
         if (isDynamicItemInstance(instanceId)) {
             if (isCurrentAttackerInstance(instanceId)) {
                 if (
@@ -2230,7 +2328,50 @@ void updateDynamicBoardItemInstances() {
             diceModelMatrix(die2Position, die2Rotation, die2Value, true);
     }
 
+    void updateOneDiePips(
+        int startIndex,
+        int value,
+        const glm::vec3& diePosition
+    ) {
+        if (SC.TI == nullptr) {
+            return;
+        }
 
+        std::vector<glm::vec2> offsets = pipOffsetsForValue(value);
+
+        for (int i = 0; i < PIPS_PER_DIE; i++) {
+            int instanceId = startIndex + i;
+
+            if (instanceId >= SC.TI[0].InstanceCount) {
+                continue;
+            }
+
+            // Hide pips while dice are rolling, because the dice are spinning.
+            // When the dice stop, the pips appear and show the final true value.
+            if (diceRolling || i >= static_cast<int>(offsets.size())) {
+                SC.TI[0].I[instanceId].Wm = hiddenModelMatrix();
+            } else {
+                SC.TI[0].I[instanceId].Wm =
+                    dicePipModelMatrix(diePosition, offsets[i]);
+            }
+        }
+    }
+
+void updateDicePipInstances() {
+    if (SC.TI == nullptr) {
+        return;
+    }
+
+    if (SC.TI[0].InstanceCount <= LAST_DICE_PIP_INDEX) {
+        return;
+    }
+
+    for (int instanceId = DIE_1_PIP_START_INDEX;
+         instanceId <= LAST_DICE_PIP_INDEX;
+         instanceId++) {
+        SC.TI[0].I[instanceId].Wm = hiddenModelMatrix();
+    }
+}
     void updateTokenInstance() {
         if (SC.TI == nullptr) {
             return;
