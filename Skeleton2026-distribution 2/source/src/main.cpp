@@ -199,6 +199,7 @@ protected:
     enum class GamePhase {
         WaitingForRoll,
         Moving,
+        Attacking,
         GameOver
     };
 
@@ -219,13 +220,12 @@ protected:
         int instanceId = -1;
     };
 
-    // These are the already-loaded chess piece instances.
-    // They are reused as random enemies/obstacles.
-    // In the current scene, lamps start at 19, so 7-18 are available board pieces.
     static constexpr int DYNAMIC_ITEM_COUNT = 12;
 
+
     std::array<int, DYNAMIC_ITEM_COUNT> dynamicItemInstanceIds = {
-        7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+        7, 8, 9, 10, 11, 12,
+        13, 14, 15, 16, 17, 18
     };
 
     std::array<BoardItem, DYNAMIC_ITEM_COUNT> dynamicItems{};
@@ -237,6 +237,19 @@ protected:
     int highScore = 0;
 
     std::string statusMessage = "Roll dice to start.";
+
+
+    // -------------------------------
+    // Attack animation state
+    // -------------------------------
+
+    bool attackAnimationActive = false;
+    float attackAnimationTimer = 0.0f;
+
+    static constexpr float ATTACK_ANIMATION_DURATION = 1.0f;
+
+    BoardItem currentAttacker{};
+    bool hasCurrentAttacker = false;
 
     // Board/token height is around y = 0.38 in this scene.
     // The dice collision uses the center of the die, so the center must be ABOVE the board.
@@ -790,6 +803,9 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
             } else if (gamePhase == GamePhase::Moving) {
                 oss << "State: MOVE\n";
                 oss << "I/J/K/L: move player\n";
+            } else if (gamePhase == GamePhase::Attacking) {
+                oss << "State: ATTACK!\n";
+                oss << "Incoming attack...\n";
             } else {
                 oss << "State: GAME OVER\n";
                 oss << "R: restart\n";
@@ -1336,6 +1352,23 @@ void updateSingleDiePhysics(
         return false;
     }
 
+    bool canSpawnAsEnemyInstance(int instanceId) const {
+        switch (instanceId) {
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+        case 14:
+        case 15:
+        case 16:
+        case 17:
+            return true;
+
+        default:
+            return false;
+        }
+    }
+
 
     BoardItemType dynamicItemTypeFromInstance(int instanceId) const {
         for (const BoardItem& item : dynamicItems) {
@@ -1348,8 +1381,38 @@ void updateSingleDiePhysics(
     }
 
 
+    BoardItemType boardItemTypeForInstance(int instanceId) const {
+        switch (instanceId) {
+        case 8:
+        case 14:
+            return BoardItemType::Bishop;
+
+        case 9:
+        case 15:
+            return BoardItemType::Knight;
+
+        case 10:
+        case 16:
+            return BoardItemType::Rook;
+
+        case 11:
+        case 17:
+            return BoardItemType::Queen;
+
+        default:
+            return BoardItemType::Empty;
+        }
+    }
+    bool isCurrentAttackerInstance(int instanceId) const {
+        return hasCurrentAttacker &&
+               currentAttacker.active &&
+               currentAttacker.instanceId == instanceId;
+    }
+
     bool isFixedBlocked(int row, int col) const {
-        // Existing fixed obstacles.
+        // The two original obstacles from scene.json:
+        // blocked_cell_a at row 2, col 3
+        // blocked_cell_b at row 4, col 5
         return (row == 2 && col == 3) ||
                (row == 4 && col == 5);
     }
@@ -1364,36 +1427,33 @@ void updateSingleDiePhysics(
 
         return false;
     }
-BoardItemType randomBoardItemType() {
-    // 0 = obstacle, 1 = rook, 2 = bishop, 3 = knight, 4 = queen
-    std::uniform_int_distribution<int> typeDistribution(0, 4);
-    int value = typeDistribution(randomEngine);
 
-    switch (value) {
-    case 0:
-        return BoardItemType::Obstacle;
-    case 1:
-        return BoardItemType::Rook;
-    case 2:
-        return BoardItemType::Bishop;
-    case 3:
-        return BoardItemType::Knight;
-    case 4:
-    default:
-        return BoardItemType::Queen;
-    }
-}
+    int findInactiveBoardItemSlot() {
+        std::vector<int> inactiveEnemySlots;
 
+        for (int i = 0; i < DYNAMIC_ITEM_COUNT; i++) {
+            int instanceId = dynamicItemInstanceIds[i];
 
-int findInactiveBoardItemSlot() const {
-    for (int i = 0; i < DYNAMIC_ITEM_COUNT; i++) {
-        if (!dynamicItems[i].active) {
-            return i;
+            if (!canSpawnAsEnemyInstance(instanceId)) {
+                continue;
+            }
+
+            if (!dynamicItems[i].active) {
+                inactiveEnemySlots.push_back(i);
+            }
         }
-    }
 
-    return -1;
-}
+        if (inactiveEnemySlots.empty()) {
+            return -1;
+        }
+
+        std::uniform_int_distribution<int> slotDistribution(
+            0,
+            static_cast<int>(inactiveEnemySlots.size()) - 1
+        );
+
+        return inactiveEnemySlots[slotDistribution(randomEngine)];
+    }
 
 
 void spawnRandomBoardItem() {
@@ -1436,11 +1496,13 @@ void spawnRandomBoardItem() {
 
     glm::ivec2 chosenCell = freeCells[cellDistribution(randomEngine)];
 
-    dynamicItems[slot].active = true;
-    dynamicItems[slot].type = randomBoardItemType();
-    dynamicItems[slot].row = chosenCell.x;
-    dynamicItems[slot].col = chosenCell.y;
-    dynamicItems[slot].instanceId = dynamicItemInstanceIds[slot];
+        int instanceId = dynamicItemInstanceIds[slot];
+
+        dynamicItems[slot].active = true;
+        dynamicItems[slot].instanceId = instanceId;
+        dynamicItems[slot].type = boardItemTypeForInstance(instanceId);
+        dynamicItems[slot].row = chosenCell.x;
+        dynamicItems[slot].col = chosenCell.y;
 
     std::ostringstream oss;
     oss << "Round " << roundNumber
@@ -1589,6 +1651,10 @@ void resetGame() {
     roundNumber = 1;
     roundsSurvived = 0;
     gamePhase = GamePhase::WaitingForRoll;
+    attackAnimationActive = false;
+    attackAnimationTimer = 0.0f;
+    hasCurrentAttacker = false;
+    currentAttacker = BoardItem{};
 
     for (int i = 0; i < DYNAMIC_ITEM_COUNT; i++) {
         dynamicItems[i].active = false;
@@ -1605,37 +1671,60 @@ void resetGame() {
     statusMessage = "New game. Round 1: roll dice.";
 }
 
+    void startAttackAnimation(const BoardItem& attacker) {
+        currentAttacker = attacker;
+        hasCurrentAttacker = true;
 
-void gameOver(const BoardItem& attacker) {
-    gamePhase = GamePhase::GameOver;
-    movementPoints = 0;
-    diceRolling = false;
+        attackAnimationActive = true;
+        attackAnimationTimer = 0.0f;
 
-    if (roundsSurvived > highScore) {
-        highScore = roundsSurvived;
-        saveHighScore();
+        gamePhase = GamePhase::Attacking;
+        movementPoints = 0;
+        diceRolling = false;
+
+        std::ostringstream oss;
+        oss << boardItemTypeName(attacker.type)
+            << " attacks!";
+
+        statusMessage = oss.str();
+
+        std::cout << statusMessage << "\n";
     }
 
-    std::ostringstream oss;
-    oss << "GAME OVER! "
-        << boardItemTypeName(attacker.type)
-        << " attacks from ("
-        << attacker.row
-        << ", "
-        << attacker.col
-        << "). Press R to restart.";
 
-    statusMessage = oss.str();
+    void finishAttackAnimation() {
+        attackAnimationActive = false;
+        attackAnimationTimer = ATTACK_ANIMATION_DURATION;
 
-    std::cout << statusMessage << "\n";
-}
+        gamePhase = GamePhase::GameOver;
+        movementPoints = 0;
+        diceRolling = false;
+
+        if (roundsSurvived > highScore) {
+            highScore = roundsSurvived;
+            saveHighScore();
+        }
+
+        std::ostringstream oss;
+        oss << "GAME OVER! "
+            << boardItemTypeName(currentAttacker.type)
+            << " attacked from ("
+            << currentAttacker.row
+            << ", "
+            << currentAttacker.col
+            << "). Press R to restart.";
+
+        statusMessage = oss.str();
+
+        std::cout << statusMessage << "\n";
+    }
 
 
 void finishPlayerMovement() {
     BoardItem attacker{};
 
     if (anyBoardItemAttacksPlayer(&attacker)) {
-        gameOver(attacker);
+        startAttackAnimation(attacker);
         return;
     }
 
@@ -1651,7 +1740,17 @@ void finishPlayerMovement() {
         return isFixedBlocked(row, col) ||
                isOccupiedByDynamicItem(row, col);
     }
+    void updateAttackAnimation(float deltaT) {
+        if (gamePhase != GamePhase::Attacking) {
+            return;
+        }
 
+        attackAnimationTimer += deltaT;
+
+        if (attackAnimationTimer >= ATTACK_ANIMATION_DURATION) {
+            finishAttackAnimation();
+        }
+    }
     float GameLogic() {
         const float FOVy = glm::radians(45.0f);
         const float nearPlane = 0.1f;
@@ -1663,6 +1762,7 @@ void finishPlayerMovement() {
         bool fire = false;
 
         getSixAxis(deltaT, m, r, fire);
+        updateAttackAnimation(deltaT);
         if (
             gamePhase == GamePhase::GameOver &&
             glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS
@@ -1686,7 +1786,7 @@ void finishPlayerMovement() {
         tryToggleCornerLight(GLFW_KEY_4, 3);
 
         // I/J/K/L always move the token again.
-        if (moveCooldown <= 0.0f) {
+        if (gamePhase == GamePhase::Moving && moveCooldown <= 0.0f) {
             if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
                 tryMoveToken(-1, 0);
                 moveCooldown = 0.18f;
@@ -1906,21 +2006,58 @@ void finishPlayerMovement() {
         return M;
     }
 
-glm::mat4 boardItemModelMatrix(const BoardItem& item) const {
-    glm::vec3 pos = gridToWorld(item.row, item.col);
+    glm::mat4 boardItemModelMatrix(const BoardItem& item) const {
+        glm::vec3 basePos = gridToWorld(item.row, item.col);
+        glm::vec3 finalPos = basePos;
 
-    glm::mat4 M = glm::mat4(1.0f);
+        if (
+            gamePhase == GamePhase::Attacking &&
+            hasCurrentAttacker &&
+            item.instanceId == currentAttacker.instanceId
+        ) {
+            float t = attackAnimationTimer / ATTACK_ANIMATION_DURATION;
+            t = std::clamp(t, 0.0f, 1.0f);
 
-    M = glm::translate(M, pos);
+            // Smoothstep easing: slow start, fast middle, slow end.
+            float easedT = t * t * (3.0f - 2.0f * t);
 
-    // Most chess GLTF pieces in the scene were originally rotated -90 degrees.
-    M = glm::rotate(M, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::vec3 playerPos = gridToWorld(tokenRow, tokenCol);
 
-    // Small enough to fit cleanly inside one board cell.
-    M = glm::scale(M, glm::vec3(0.13f, 0.13f, 0.13f));
+            // Move only partway toward the player, so the models do not fully overlap.
+            glm::vec3 lungeTarget = basePos + (playerPos - basePos) * 0.65f;
 
-    return M;
-}
+            finalPos = glm::mix(basePos, lungeTarget, easedT);
+
+            // Small hop arc during the attack.
+            float jumpHeight = std::sin(t * 3.14159265f) * 0.45f;
+            finalPos.y += jumpHeight;
+        }
+
+        glm::mat4 M = glm::mat4(1.0f);
+
+        M = glm::translate(M, finalPos);
+
+        // Most chess GLTF pieces in the scene were originally rotated -90 degrees.
+        M = glm::rotate(M, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        // Slight scale pulse during attack.
+        float scale = 0.13f;
+
+        if (
+            gamePhase == GamePhase::Attacking &&
+            hasCurrentAttacker &&
+            item.instanceId == currentAttacker.instanceId
+        ) {
+            float t = attackAnimationTimer / ATTACK_ANIMATION_DURATION;
+            t = std::clamp(t, 0.0f, 1.0f);
+
+            scale = 0.13f + std::sin(t * 3.14159265f) * 0.035f;
+        }
+
+        M = glm::scale(M, glm::vec3(scale, scale, scale));
+
+        return M;
+    }
 
 
 void updateDynamicBoardItemInstances() {
@@ -1986,29 +2123,39 @@ void updateDynamicBoardItemInstances() {
         return glm::vec4(0.05f, 0.04f, 0.03f, 0.75f);
     }
     glm::vec4 objectMaterialColor(int instanceId) const {
-    if (isDynamicItemInstance(instanceId)) {
-        BoardItemType type = dynamicItemTypeFromInstance(instanceId);
+        if (isDynamicItemInstance(instanceId)) {
+            if (isCurrentAttackerInstance(instanceId)) {
+                if (
+                    gamePhase == GamePhase::Attacking ||
+                    gamePhase == GamePhase::GameOver
+                ) {
+                    // Alpha > 1.5 means emissive in Arena.frag.
+                    return glm::vec4(1.0f, 0.05f, 0.02f, 2.0f);
+                }
+            }
 
-        switch (type) {
-        case BoardItemType::Obstacle:
-            return glm::vec4(0.28f, 0.16f, 0.06f, 0.85f);
+            BoardItemType type = dynamicItemTypeFromInstance(instanceId);
 
-        case BoardItemType::Rook:
-            return glm::vec4(0.75f, 0.75f, 0.78f, 1.0f);
+            switch (type) {
+            case BoardItemType::Obstacle:
+                return glm::vec4(0.28f, 0.16f, 0.06f, 0.85f);
 
-        case BoardItemType::Bishop:
-            return glm::vec4(0.55f, 0.80f, 1.00f, 1.0f);
+            case BoardItemType::Rook:
+                return glm::vec4(0.75f, 0.75f, 0.78f, 1.0f);
 
-        case BoardItemType::Knight:
-            return glm::vec4(1.00f, 0.65f, 0.20f, 1.0f);
+            case BoardItemType::Bishop:
+                return glm::vec4(0.55f, 0.80f, 1.00f, 1.0f);
 
-        case BoardItemType::Queen:
-            return glm::vec4(1.00f, 0.15f, 0.15f, 1.0f);
+            case BoardItemType::Knight:
+                return glm::vec4(1.00f, 0.65f, 0.20f, 1.0f);
 
-        default:
-            return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+            case BoardItemType::Queen:
+                return glm::vec4(1.00f, 0.15f, 0.15f, 1.0f);
+
+            default:
+                return glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+            }
         }
-    }
         switch (instanceId) {
         case 0:
             // table_surface
