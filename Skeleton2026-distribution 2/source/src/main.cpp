@@ -24,16 +24,10 @@ struct UniformBufferObject {
 
 // Uniform buffer shared by the whole scene
 struct GlobalUniformBufferObject {
-    alignas(16) glm::mat4 lightViewProj;
+    alignas(16) glm::mat4 lightViewProj[4];
 
-    // Four point lights.
-    // xyz = world position, w = unused
     alignas(16) glm::vec4 lightPositions[4];
-
-    // rgb = color, w = intensity
     alignas(16) glm::vec4 lightColors[4];
-
-    // x/y/z/w = enabled state for light 0/1/2/3
     alignas(16) glm::vec4 lightEnabled;
 
     alignas(16) glm::vec4 eyePos;
@@ -72,10 +66,10 @@ protected:
     VertexDescriptor VD;
 
     RenderPass RP;
-    RenderPass RPshadow;
+    std::array<RenderPass, 4> RPshadow;
 
     Pipeline P;
-    Pipeline Pshadow;
+    std::array<Pipeline, 4> Pshadow;
 
     Scene SC;
     std::vector<VertexDescriptorRef> VDRs;
@@ -155,19 +149,19 @@ protected:
     // The lights are placed around the board.
     // These are point lights used by the fragment shader.
     glm::vec4 cornerLightPositions[NUM_CORNER_LIGHTS] = {
-        glm::vec4(-4.2f, 2.4f, -4.2f, 1.0f), // light 1: back-left
-        glm::vec4( 4.2f, 2.4f, -4.2f, 1.0f), // light 2: back-right
-        glm::vec4(-4.2f, 2.4f,  4.2f, 1.0f), // light 3: front-left
-        glm::vec4( 4.2f, 2.4f,  4.2f, 1.0f)  // light 4: front-right
+        glm::vec4(-4.2f, 2.4f, -4.2f, 1.0f),
+        glm::vec4( 4.2f, 2.5f, -4.2f, 1.0f),
+        glm::vec4(-4.2f, 2.4f,  4.2f, 1.0f),
+        glm::vec4( 4.2f, 2.4f,  4.2f, 1.0f)
     };
 
     // rgb = color, w = intensity.
     // Lower intensity than the old single lamp, because now several lights can be active.
     glm::vec4 cornerLightColors[NUM_CORNER_LIGHTS] = {
-        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f),
-        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f),
-        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f),
-        glm::vec4(1.0f, 0.82f, 0.55f, 3.2f)
+        glm::vec4(1.0f, 0.90f, 0.72f, 1.35f),
+        glm::vec4(1.0f, 0.90f, 0.72f, 0.55f),
+        glm::vec4(1.0f, 0.90f, 0.72f, 0.55f),
+        glm::vec4(1.0f, 0.90f, 0.72f, 0.55f)
     };
 
     bool cornerLightEnabled[NUM_CORNER_LIGHTS] = {
@@ -383,22 +377,50 @@ protected:
     }
 });
 
+        // NOTE: the 4th field of each binding (linkSize) is used by DescriptorSet::init
+        // as an offset into a SHARED imageInfo array across all image-type bindings in
+        // this layout. It must be a running offset (0, 1, 2, 3, ...), not 0 for every
+        // binding -- otherwise every sampler binding aliases the same image slot, which
+        // was making all four shadow maps sample the same (last-written) texture while
+        // the per-light view-proj matrices stayed correct. That mismatch is exactly what
+        // produced "correct direction, wrong shadow content" for every light.
         DSLglobal.init(this, {
-            {
-                0,
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                VK_SHADER_STAGE_ALL_GRAPHICS,
-                sizeof(GlobalUniformBufferObject),
-                1
-            },
-            {
-                1,
-                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-                0,
-                1
-            }
-        });
+      {
+          0,
+          VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+          VK_SHADER_STAGE_ALL_GRAPHICS,
+          sizeof(GlobalUniformBufferObject),
+          1
+      },
+      {
+          1,
+          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          VK_SHADER_STAGE_FRAGMENT_BIT,
+          0,
+          1
+      },
+      {
+          2,
+          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          VK_SHADER_STAGE_FRAGMENT_BIT,
+          1,
+          1
+      },
+      {
+          3,
+          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          VK_SHADER_STAGE_FRAGMENT_BIT,
+          2,
+          1
+      },
+      {
+          4,
+          VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+          VK_SHADER_STAGE_FRAGMENT_BIT,
+          3,
+          1
+      }
+  });
 
         DSLshadowGlobal.init(this, {
             {
@@ -458,27 +480,36 @@ protected:
         RP.properties[0].clearValue = {0.05f, 0.07f, 0.10f, 1.0f};
 
         // Shadow render pass: depth-only texture, 2048 x 2048.
-        RPshadow.init(
-            this,
-            2048,
-            2048,
-            -1,
-            RenderPass::getStandardAttchmentsProperties(AT_DEPTH_ONLY, this),
-            RenderPass::getStandardDependencies(ATDEP_DEPTH_TRANS),
-            true
-        );
+        for (int i = 0; i < 4; i++) {
+            RPshadow[i].init(
+                this,
+                2048,
+                2048,
+                -1,
+                RenderPass::getStandardAttchmentsProperties(AT_DEPTH_ONLY, this),
+                RenderPass::getStandardDependencies(ATDEP_DEPTH_TRANS),
+                true
+            );
+        }
 
         // Shadow pipeline: writes only depth from the lamp view.
-        Pshadow.init(
-            this,
-            &VD,
-            "shaders/Shadow.vert.spv",
-            "shaders/Shadow.frag.spv",
-            {&DSLshadowGlobal, &DSLshadowLocal}
-        );
+        // Shadow pipelines: one per light, each writes only depth from that lamp's view.
+        // A separate Pipeline object per light is required because Pipeline::create()
+        // binds to a specific RenderPass at creation time; reusing one Pipeline object
+        // across multiple RenderPass objects left passes 1-3 using pass 0's viewport/
+        // framebuffer state, which is why shadows from lights 2-4 were offset.
+        for (int i = 0; i < 4; i++) {
+            Pshadow[i].init(
+                this,
+                &VD,
+                "shaders/Shadow.vert.spv",
+                "shaders/Shadow.frag.spv",
+                {&DSLshadowGlobal, &DSLshadowLocal}
+            );
 
-        Pshadow.setCullMode(VK_CULL_MODE_NONE);
-        Pshadow.setCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
+            Pshadow[i].setCullMode(VK_CULL_MODE_NONE);
+            Pshadow[i].setCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
+        }
 
         // Main arena pipeline.
         P.init(
@@ -505,38 +536,85 @@ protected:
         VDRs[0].init("VDposNormUV", &VD);
 
 
-        TextureDefs shadowMapTexture{};
-        shadowMapTexture.fromInstance = false;
-        shadowMapTexture.pos = 0;
-        shadowMapTexture.info = {};
+        TextureDefs shadowMapTexture0{};
+        shadowMapTexture0.fromInstance = false;
+        shadowMapTexture0.pos = 0;
+        shadowMapTexture0.info = {};
+
+        TextureDefs shadowMapTexture1{};
+        shadowMapTexture1.fromInstance = false;
+        shadowMapTexture1.pos = 1;
+        shadowMapTexture1.info = {};
+
+        TextureDefs shadowMapTexture2{};
+        shadowMapTexture2.fromInstance = false;
+        shadowMapTexture2.pos = 2;
+        shadowMapTexture2.info = {};
+
+        TextureDefs shadowMapTexture3{};
+        shadowMapTexture3.fromInstance = false;
+        shadowMapTexture3.pos = 3;
+        shadowMapTexture3.info = {};
 
         TextureDefs objectTexture{};
         objectTexture.fromInstance = true;
         objectTexture.pos = 0;
         objectTexture.info = {};
+
+        PRs.resize(1);
         PRs.resize(1);
         PRs[0].init(
             "ArenaTechnique",
             {
-                // Pass 0: shadow pass.
-                // Descriptor set 0 = shadow global UBO.
-                // Descriptor set 1 = shadow local UBO.
+                // Pass 0: shadow from light 1.
                 {
-                    &Pshadow,
+                    &Pshadow[0],
                     {
                         {},
                         {}
                     }
                 },
 
-                // Pass 1: main render pass.
-                // Descriptor set 0 = global UBO + shadow map.
-                // Descriptor set 1 = local UBO + object texture.
+                // Pass 1: shadow from light 2.
+                {
+                    &Pshadow[1],
+                    {
+                        {},
+                        {}
+                    }
+                },
+
+                // Pass 2: shadow from light 3.
+                {
+                    &Pshadow[2],
+                    {
+                        {},
+                        {}
+                    }
+                },
+
+                // Pass 3: shadow from light 4.
+                {
+                    &Pshadow[3],
+                    {
+                        {},
+                        {}
+                    }
+                },
+
+                // Pass 4: main scene render.
                 {
                     &P,
                     {
-                        {shadowMapTexture},
-                        {objectTexture}
+                        {
+                            shadowMapTexture0,
+                            shadowMapTexture1,
+                            shadowMapTexture2,
+                            shadowMapTexture3
+                        },
+                        {
+                            objectTexture
+                        }
                     }
                 }
             },
@@ -544,7 +622,8 @@ protected:
             &VD
         );
 
-        if (SC.init(this, 2, VDRs, PRs, "assets/scenes/scene.json") != 0) {
+
+        if (SC.init(this, 5, VDRs, PRs, "assets/scenes/scene.json") != 0) {
             std::cout << "ERROR LOADING THE SCENE\n";
             exit(0);
         }
@@ -571,26 +650,44 @@ protected:
     }
 
     void pipelinesAndDescriptorSetsInit() {
-        RPshadow.create();
+        for (int i = 0; i < 4; i++) {
+            RPshadow[i].create();
+        }
+
         RP.create();
 
-        Pshadow.create(&RPshadow);
+        for (int i = 0; i < 4; i++) {
+            Pshadow[i].create(&RPshadow[i]);
+        }
+
         P.create(&RP);
 
-        // Now that RPshadow.create() has created the depth texture and sampler,
-        // update the placeholder shadow-map descriptor used by the main pass.
-        PRs[0].PT[1].texDefs[0][0].info =
-            RPshadow.attachments[0].getViewAndSampler();
+        PRs[0].PT[4].texDefs[0][0].info =
+            RPshadow[0].attachments[0].getViewAndSampler();
+
+        PRs[0].PT[4].texDefs[0][1].info =
+            RPshadow[1].attachments[0].getViewAndSampler();
+
+        PRs[0].PT[4].texDefs[0][2].info =
+            RPshadow[2].attachments[0].getViewAndSampler();
+
+        PRs[0].PT[4].texDefs[0][3].info =
+            RPshadow[3].attachments[0].getViewAndSampler();
 
         SC.pipelinesAndDescriptorSetsInit();
         txt.pipelinesAndDescriptorSetsInit();
     }
 
     void pipelinesAndDescriptorSetsCleanup() {
-        Pshadow.cleanup();
+        for (int i = 0; i < 4; i++) {
+            Pshadow[i].cleanup();
+        }
         P.cleanup();
 
-        RPshadow.cleanup();
+        for (int i = 0; i < 4; i++) {
+            RPshadow[i].cleanup();
+        }
+
         RP.cleanup();
 
         SC.pipelinesAndDescriptorSetsCleanup();
@@ -602,10 +699,15 @@ protected:
         DSLshadowGlobal.cleanup();
         DSLshadowLocal.cleanup();
 
-        Pshadow.destroy();
+        for (int i = 0; i < 4; i++) {
+            Pshadow[i].destroy();
+        }
         P.destroy();
 
-        RPshadow.destroy();
+        for (int i = 0; i < 4; i++) {
+            RPshadow[i].destroy();
+        }
+
         RP.destroy();
 
         SC.localCleanup();
@@ -626,22 +728,20 @@ protected:
         app->populateCommandBuffer(commandBuffer, currentImage);
     }
 
+    void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
+        for (int lightIndex = 0; lightIndex < 4; lightIndex++) {
+            RPshadow[lightIndex].begin(commandBuffer, currentImage);
+            populateShadowCommandBuffer(commandBuffer, currentImage, lightIndex);
+            RPshadow[lightIndex].end(commandBuffer);
+        }
 
-void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
-    // Pass 0:
-    // Render only real shadow casters from the lamp point of view.
-    // Do NOT render the table, board, or lamp into the shadow map.
-    // They should receive shadows, not create giant fake/self shadows.
-    RPshadow.begin(commandBuffer, currentImage);
-    populateShadowCommandBuffer(commandBuffer, currentImage);
-    RPshadow.end(commandBuffer);
+        RP.begin(commandBuffer, currentImage);
 
-    // Pass 1:
-    // Render the normal camera view and sample the shadow map.
-    RP.begin(commandBuffer, currentImage);
-    SC.populateCommandBuffer(commandBuffer, 1, currentImage);
-    RP.end(commandBuffer);
-}
+        // Main render pass is now pass 4.
+        SC.populateCommandBuffer(commandBuffer, 4, currentImage);
+
+        RP.end(commandBuffer);
+    }
     bool isLampInstance(int instanceId) const {
         return
             instanceId == LAMP_1_POST_INSTANCE_INDEX ||
@@ -654,66 +754,87 @@ void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
             instanceId == LAMP_4_BULB_INSTANCE_INDEX;
     }
 
-bool instanceCastsShadow(int instanceId) const {
-    // Scene instance indices from scene.json:
-    // 0 = table_surface
-    // 1 = game_board
-    // 7 = lamp_post
-    // 8 = lamp_bulb
-    //
-    // These should not be rendered into the shadow map.
-    // The board and table are receivers.
-    // The lamp should not cast a weird lamp-shaped shadow on the board.
-        if (
-            instanceId == 0 ||
-            instanceId == 1 ||
+    bool instanceCastsShadow(int instanceId) const {
+        // Large receiver surfaces should receive shadows, not cast them.
+        if (instanceId == 0 ||      // table_surface
+            instanceId == 1 ||      // game_board
             instanceId == DICE_TRAY_INDEX ||
             isLampInstance(instanceId) ||
-            isDicePipInstance(instanceId)
-        ) {
+            isDicePipInstance(instanceId)) {
+            return false;
+            }
+
+        // Very important: hidden inactive pieces must not cast shadows.
+        if (isInactiveDynamicItemInstance(instanceId)) {
             return false;
         }
 
-    return true;
-}
-
-
-void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
-    constexpr int passId = 0;
-
-    for (int techniqueId = 0; techniqueId < SC.TechniqueInstanceCount; techniqueId++) {
-        Pipeline* pipeline = SC.TI[techniqueId].T->PT[passId].P;
-
-        if (pipeline == nullptr) {
-            continue;
+        // Visible objects that should cast shadows.
+        if (instanceId == TOKEN_INSTANCE_INDEX) {
+            return true;
         }
 
-        pipeline->bind(commandBuffer);
+        if (instanceId == DIE_1_INSTANCE_INDEX ||
+            instanceId == DIE_2_INSTANCE_INDEX) {
+            return true;
+            }
 
-        for (int instanceId = 0; instanceId < SC.TI[techniqueId].InstanceCount; instanceId++) {
-            if (!instanceCastsShadow(instanceId)) {
+        // Fixed obstacles.
+        if (instanceId == 3 || instanceId == 4) {
+            return true;
+        }
+
+        // Active enemy pieces.
+        if (isActiveDynamicItemInstance(instanceId)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    void populateShadowCommandBuffer(
+        VkCommandBuffer commandBuffer,
+        int currentImage,
+        int passId
+    ) {
+        for (int techniqueId = 0; techniqueId < SC.TechniqueInstanceCount; techniqueId++) {
+            Pipeline* pipeline = SC.TI[techniqueId].T->PT[passId].P;
+
+            if (pipeline == nullptr) {
                 continue;
             }
 
-            Instance& instance = SC.TI[techniqueId].I[instanceId];
+            pipeline->bind(commandBuffer);
 
-            SC.M[instance.Mid]->bind(commandBuffer);
+            for (int instanceId = 0; instanceId < SC.TI[techniqueId].InstanceCount; instanceId++) {
+                if (!instanceCastsShadow(instanceId)) {
+                    continue;
+                }
 
-            for (int setId = 0; setId < instance.NDs[passId]; setId++) {
-                instance.DS[passId][setId]->bind(commandBuffer, *pipeline, setId, currentImage);
+                Instance& instance = SC.TI[techniqueId].I[instanceId];
+
+                SC.M[instance.Mid]->bind(commandBuffer);
+
+                for (int setId = 0; setId < instance.NDs[passId]; setId++) {
+                    instance.DS[passId][setId]->bind(
+                        commandBuffer,
+                        *pipeline,
+                        setId,
+                        currentImage
+                    );
+                }
+
+                vkCmdDrawIndexed(
+                    commandBuffer,
+                    static_cast<uint32_t>(SC.M[instance.Mid]->indices.size()),
+                    1,
+                    0,
+                    0,
+                    0
+                );
             }
-
-            vkCmdDrawIndexed(
-                commandBuffer,
-                static_cast<uint32_t>(SC.M[instance.Mid]->indices.size()),
-                1,
-                0,
-                0,
-                0
-            );
         }
     }
-}
 
 
     // -------------------------------
@@ -721,69 +842,89 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
     // -------------------------------
 
     void updateUniformBuffer(uint32_t currentImage) {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window, GLFW_TRUE);
-        }
-
-        float deltaT = GameLogic();
-
-        updateTokenInstance();
-        updateDiceInstances(deltaT);
-        updateDicePipInstances();
-        updateDynamicBoardItemInstances();
-        // updateLampInstances();
-
-        glm::mat4 lightViewProj = computeLightViewProj();
-
-        ShadowGlobalUniformBufferObject sgubo{};
-        sgubo.lightViewProj = lightViewProj;
-
-        GlobalUniformBufferObject gubo{};
-        gubo.lightViewProj = lightViewProj;
-
-        for (int i = 0; i < NUM_CORNER_LIGHTS; i++) {
-            gubo.lightPositions[i] = cornerLightPositions[i];
-            gubo.lightColors[i] = cornerLightColors[i];
-        }
-
-        gubo.lightEnabled = glm::vec4(
-            cornerLightEnabled[0] ? 1.0f : 0.0f,
-            cornerLightEnabled[1] ? 1.0f : 0.0f,
-            cornerLightEnabled[2] ? 1.0f : 0.0f,
-            cornerLightEnabled[3] ? 1.0f : 0.0f
-        );
-
-        gubo.eyePos = glm::vec4(glm::vec3(glm::inverse(View)[3]), 1.0f);
-        // x = base bias
-        // y = shadow strength
-        // z = shadow map size
-        // w = unused
-        gubo.shadowParams = glm::vec4(0.0065f, 0.72f, 0.025f, 1.25f);
-        UniformBufferObject ubo{};
-        ShadowLocalUniformBufferObject slubo{};
-
-        for (int instanceId = 0; instanceId < SC.TI[0].InstanceCount; instanceId++) {
-            glm::mat4 model = SC.TI[0].I[instanceId].Wm;
-
-            // Pass 0: shadow map uniforms.
-            slubo.mMat = model;
-
-            SC.TI[0].I[instanceId].DS[0][0]->map(currentImage, &sgubo, 0);
-            SC.TI[0].I[instanceId].DS[0][1]->map(currentImage, &slubo, 0);
-
-            // Pass 1: main render uniforms.
-            ubo.mMat = model;
-            ubo.mvpMat = ViewPrj * model;
-            ubo.materialColor = objectMaterialColor(instanceId);
-
-            SC.TI[0].I[instanceId].DS[1][0]->map(currentImage, &gubo, 0);
-            SC.TI[0].I[instanceId].DS[1][1]->map(currentImage, &ubo, 0);
-        }
-
-        updateHudText(deltaT);
-
-        txt.updateCommandBuffer();
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
+
+    float deltaT = GameLogic();
+
+    updateTokenInstance();
+    updateDiceInstances(deltaT);
+    updateDicePipInstances();
+    updateDynamicBoardItemInstances();
+    // updateLampInstances();
+
+    std::array<glm::mat4, 4> lightViewProj{};
+
+    for (int i = 0; i < 4; i++) {
+        lightViewProj[i] = computeLightViewProj(i);
+    }
+
+    std::array<ShadowGlobalUniformBufferObject, 4> sgubo{};
+
+    for (int i = 0; i < 4; i++) {
+        sgubo[i].lightViewProj = lightViewProj[i];
+    }
+
+    GlobalUniformBufferObject gubo{};
+
+    for (int i = 0; i < 4; i++) {
+        gubo.lightViewProj[i] = lightViewProj[i];
+        gubo.lightPositions[i] = cornerLightPositions[i];
+        gubo.lightColors[i] = cornerLightColors[i];
+    }
+
+    gubo.lightEnabled = glm::vec4(
+        cornerLightEnabled[0] ? 1.0f : 0.0f,
+        cornerLightEnabled[1] ? 1.0f : 0.0f,
+        cornerLightEnabled[2] ? 1.0f : 0.0f,
+        cornerLightEnabled[3] ? 1.0f : 0.0f
+    );
+
+    gubo.eyePos = glm::vec4(glm::vec3(glm::inverse(View)[3]), 1.0f);
+
+    // x = base bias
+    // y = shadow strength
+    // z = normal offset
+    // w = unused
+    gubo.shadowParams = glm::vec4(0.0045f, 0.95f, 0.018f, 1.0f);
+
+    UniformBufferObject ubo{};
+    ShadowLocalUniformBufferObject slubo{};
+
+    for (int instanceId = 0; instanceId < SC.TI[0].InstanceCount; instanceId++) {
+        glm::mat4 model = SC.TI[0].I[instanceId].Wm;
+
+        slubo.mMat = model;
+
+        // Shadow passes 0, 1, 2, 3.
+        for (int shadowPass = 0; shadowPass < 4; shadowPass++) {
+            SC.TI[0].I[instanceId].DS[shadowPass][0]->map(
+                currentImage,
+                &sgubo[shadowPass],
+                0
+            );
+
+            SC.TI[0].I[instanceId].DS[shadowPass][1]->map(
+                currentImage,
+                &slubo,
+                0
+            );
+        }
+
+        // Main pass 4.
+        ubo.mMat = model;
+        ubo.mvpMat = ViewPrj * model;
+        ubo.materialColor = objectMaterialColor(instanceId);
+
+        SC.TI[0].I[instanceId].DS[4][0]->map(currentImage, &gubo, 0);
+        SC.TI[0].I[instanceId].DS[4][1]->map(currentImage, &ubo, 0);
+    }
+
+        debugDumpLightsAndInstance(TOKEN_INSTANCE_INDEX);
+        updateHudText(deltaT);
+    txt.updateCommandBuffer();
+}
 
 
     void updateHudText(float deltaT) {
@@ -847,7 +988,68 @@ void populateShadowCommandBuffer(VkCommandBuffer commandBuffer, int currentImage
         }
     }
 
+void debugDumpLightsAndInstance(int instanceId) {
+        static bool dumped = false;
+        if (dumped) {
+            return;
+        }
+        dumped = true;
 
+        std::cout << "\n===== DEBUG DUMP =====\n";
+
+        for (int i = 0; i < NUM_CORNER_LIGHTS; i++) {
+            glm::vec3 pos = glm::vec3(cornerLightPositions[i]);
+            glm::mat4 vp = computeLightViewProj(i);
+
+            std::cout << "Light " << i
+                       << " pos(" << pos.x << "," << pos.y << "," << pos.z << ")"
+                       << " enabled=" << cornerLightEnabled[i] << "\n";
+
+            // Project the board center and the target instance's world position
+            // through this light's view-proj to see where they land in [-1,1] clip space.
+            glm::vec4 clipCenter = vp * glm::vec4(0.0f, 0.35f, 0.0f, 1.0f);
+            if (clipCenter.w != 0.0f) {
+                glm::vec3 ndc = glm::vec3(clipCenter) / clipCenter.w;
+                std::cout << "    board center NDC: ("
+                          << ndc.x << ", " << ndc.y << ", " << ndc.z << ")\n";
+            }
+
+            if (instanceId >= 0 && instanceId < SC.TI[0].InstanceCount) {
+                glm::vec3 worldPos = glm::vec3(
+                    SC.TI[0].I[instanceId].Wm[3][0],
+                    SC.TI[0].I[instanceId].Wm[3][1],
+                    SC.TI[0].I[instanceId].Wm[3][2]
+                );
+
+                glm::vec4 clipInst = vp * glm::vec4(worldPos, 1.0f);
+                if (clipInst.w != 0.0f) {
+                    glm::vec3 ndcInst = glm::vec3(clipInst) / clipInst.w;
+                    std::cout << "    instance " << instanceId
+                              << " world(" << worldPos.x << "," << worldPos.y << "," << worldPos.z << ")"
+                              << " NDC(" << ndcInst.x << "," << ndcInst.y << "," << ndcInst.z << ")\n";
+                }
+            }
+        }
+
+        // Dump the pipeline pointers used per shadow pass, to verify
+        // they are 4 distinct objects, not aliased.
+        for (int passId = 0; passId < 4; passId++) {
+            Pipeline* p = PRs[0].PT[passId].P;
+            std::cout << "Pass " << passId << " pipeline ptr: " << p
+                      << "  Pshadow[" << passId << "] ptr: " << &Pshadow[passId] << "\n";
+        }
+
+        // Dump the shadow map texture views actually bound into the main pass,
+        // to verify shadowMap0..3 point at 4 distinct images, not the same one.
+        for (int i = 0; i < 4; i++) {
+            VkDescriptorImageInfo info = RPshadow[i].attachments[0].getViewAndSampler();
+            std::cout << "Shadow map " << i
+                      << " imageView: " << info.imageView
+                      << " sampler: " << info.sampler << "\n";
+        }
+
+        std::cout << "===== END DEBUG DUMP =====\n\n";
+    }
     // -------------------------------
     // Dice logic
     // -------------------------------
@@ -1366,6 +1568,30 @@ void updateSingleDiePhysics(
 
         return false;
     }
+    bool isInactiveDynamicItemInstance(int instanceId) const {
+        for (const BoardItem& item : dynamicItems) {
+            if (item.instanceId == instanceId && !item.active) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    bool isActiveDynamicItemInstance(int instanceId) const {
+        for (const BoardItem& item : dynamicItems) {
+            if (item.instanceId == instanceId && item.active) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+
+
 
     bool canSpawnAsEnemyInstance(int instanceId) const {
         switch (instanceId) {
@@ -1400,11 +1626,11 @@ void updateSingleDiePhysics(
         switch (instanceId) {
         case 8:
         case 14:
-            return BoardItemType::Bishop;
+            return BoardItemType::Knight;
 
         case 9:
         case 15:
-            return BoardItemType::Knight;
+            return BoardItemType::Bishop;
 
         case 10:
         case 16:
@@ -2127,6 +2353,7 @@ void finishPlayerMovement() {
         M = glm::rotate(M, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         // Slight scale pulse during attack.
+
         float scale = 0.13f;
 
         if (
@@ -2178,36 +2405,43 @@ void updateDynamicBoardItemInstances() {
         }
     }
 }
-    glm::vec3 lampPosition() const {
-        // The shadow map still uses light 1.
-        // The scene has four lights for illumination, but only one shadow-casting light.
-        return glm::vec3(cornerLightPositions[0]);
+    glm::vec3 lampPosition(int lightIndex) const {
+        return glm::vec3(cornerLightPositions[lightIndex]);
     }
 
-    glm::vec3 lampTarget() const {
-        // Aim at the board center, slightly above the board surface.
-        return glm::vec3(0.0f, 0.35f, 0.0f);
-    }
 
-    glm::mat4 computeLightViewProj() const {
+
+    glm::mat4 computeLightViewProj(int lightIndex) const {
+        glm::vec3 lightPos = glm::vec3(cornerLightPositions[lightIndex]);
+
+        // All lamps aim at the same fixed point at board center.
+        // (A per-light "partial target" was tried here and made things worse —
+        // it produced a different, inconsistent frustum tilt per light instead
+        // of a uniform one, which is why shadows looked offset in a way that
+        // didn't match any single light's real direction.)
+        glm::vec3 target = glm::vec3(0.0f, 0.35f, 0.0f);
+
         glm::mat4 lightView = glm::lookAt(
-            lampPosition(),
-            lampTarget(),
+            lightPos,
+            target,
             glm::vec3(0.0f, 1.0f, 0.0f)
         );
 
         glm::mat4 lightProj = glm::perspectiveRH_ZO(
-            glm::radians(78.0f),
+            glm::radians(82.0f),
             1.0f,
-            0.25f,
+            0.20f,
             16.0f
         );
 
-        // Vulkan clip-space correction.
+
         lightProj[1][1] *= -1.0f;
 
         return lightProj * lightView;
     }
+
+
+
     glm::vec4 lampBulbMaterial(int lightIndex) const {
         if (cornerLightEnabled[lightIndex]) {
             // Alpha > 1.5 means emissive in Arena.frag.

@@ -1,17 +1,18 @@
 #version 450
 
 layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
-    mat4 lightViewProj;
-
+    mat4 lightViewProj[4];
     vec4 lightPositions[4];
     vec4 lightColors[4];
     vec4 lightEnabled;
-
     vec4 eyePos;
     vec4 shadowParams;
 } gubo;
 
-layout(set = 0, binding = 1) uniform sampler2D shadowMap;
+layout(set = 0, binding = 1) uniform sampler2D shadowMap0;
+layout(set = 0, binding = 2) uniform sampler2D shadowMap1;
+layout(set = 0, binding = 3) uniform sampler2D shadowMap2;
+layout(set = 0, binding = 4) uniform sampler2D shadowMap3;
 
 layout(set = 1, binding = 0) uniform UniformBufferObject {
     mat4 mvpMat;
@@ -27,60 +28,71 @@ layout(location = 2) in vec2 fragUV;
 
 layout(location = 0) out vec4 outColor;
 
-float computeShadowVisibility(vec3 worldPos, vec3 normal, vec3 lightDir) {
+
+float computeShadowVisibility(
+    sampler2D currentShadowMap,
+    mat4 currentLightViewProj,
+    vec3 worldPos,
+    vec3 normal,
+    vec3 lightDir
+) {
     float baseBias = gubo.shadowParams.x;
     float shadowStrength = gubo.shadowParams.y;
     float normalOffset = gubo.shadowParams.z;
-    float pcfRadius = gubo.shadowParams.w;
 
-    vec3 receiverPos = worldPos + normal * normalOffset;
+    vec3 offsetWorldPos = worldPos + normal * normalOffset;
 
-    vec4 lightClip = gubo.lightViewProj * vec4(receiverPos, 1.0);
-    vec3 projCoords = lightClip.xyz / lightClip.w;
+    vec4 lightClip = currentLightViewProj * vec4(offsetWorldPos, 1.0);
 
-    if (projCoords.z <= 0.0 || projCoords.z >= 1.0) {
+    if (lightClip.w <= 0.0) {
         return 1.0;
     }
 
-    vec2 shadowUV = projCoords.xy * 0.5 + 0.5;
+    vec3 projCoords = lightClip.xyz / lightClip.w;
+    projCoords.xy = projCoords.xy * 0.5 + 0.5;
 
     if (
-    shadowUV.x <= 0.0 || shadowUV.x >= 1.0 ||
-    shadowUV.y <= 0.0 || shadowUV.y >= 1.0
+    projCoords.x < 0.0 || projCoords.x > 1.0 ||
+    projCoords.y < 0.0 || projCoords.y > 1.0 ||
+    projCoords.z < 0.0 || projCoords.z > 1.0
     ) {
         return 1.0;
     }
 
     float currentDepth = projCoords.z;
 
-    float ndotl = max(dot(normal, lightDir), 0.0);
-    float bias = max(baseBias * (1.0 - ndotl), baseBias * 0.35);
+    float angleBias = baseBias * (1.0 - max(dot(normal, lightDir), 0.0));
+    float bias = max(baseBias * 0.35, angleBias);
 
-    vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+    vec2 texelSize = 1.0 / vec2(textureSize(currentShadowMap, 0));
 
-    float shadowAmount = 0.0;
+    float shadow = 0.0;
 
     for (int x = -1; x <= 1; x++) {
         for (int y = -1; y <= 1; y++) {
-            vec2 offset = vec2(x, y) * texelSize * pcfRadius;
-            float closestDepth = texture(shadowMap, shadowUV + offset).r;
+            float closestDepth = texture(
+                currentShadowMap,
+                projCoords.xy + vec2(x, y) * texelSize
+            ).r;
 
             if (currentDepth - bias > closestDepth) {
-                shadowAmount += 1.0;
+                shadow += 1.0;
             }
         }
     }
 
-    shadowAmount /= 9.0;
+    shadow /= 9.0;
 
-    return 1.0 - shadowAmount * shadowStrength;
+    return mix(1.0, 1.0 - shadowStrength, shadow);
 }
+
 
 vec3 computePointLight(
     vec4 lightPosition,
     vec4 lightColorAndIntensity,
     float enabled,
-    float usesShadow,
+    sampler2D currentShadowMap,
+    mat4 currentLightViewProj,
     vec3 baseColor,
     vec3 normal,
     vec3 viewDir
@@ -89,99 +101,89 @@ vec3 computePointLight(
         return vec3(0.0);
     }
 
-    vec3 lightPos = lightPosition.xyz;
-    vec3 lightColor = lightColorAndIntensity.rgb;
-    float lightIntensity = lightColorAndIntensity.a;
-
-    vec3 lightVector = lightPos - fragWorldPos;
+    vec3 lightVector = lightPosition.xyz - fragWorldPos;
     float distanceToLight = length(lightVector);
-    vec3 lightDir = normalize(lightVector);
 
-    vec3 halfVector = normalize(lightDir + viewDir);
-
-    float constantAtt = 1.0;
-    float linearAtt = 0.18;
-    float quadraticAtt = 0.055;
-
-    float attenuation =
-    1.0 / (
-    constantAtt +
-    linearAtt * distanceToLight +
-    quadraticAtt * distanceToLight * distanceToLight
-    );
-
-    float diff = max(dot(normal, lightDir), 0.0);
-
-    vec3 diffuse =
-    diff *
-    baseColor *
-    lightColor *
-    lightIntensity *
-    attenuation;
-
-    float specularStrength = 0.35;
-    float shininess = 48.0;
-    float spec = pow(max(dot(normal, halfVector), 0.0), shininess);
-
-    vec3 specular =
-    specularStrength *
-    spec *
-    lightColor *
-    lightIntensity *
-    attenuation;
-
-    float visibility = 1.0;
-
-    if (usesShadow > 0.5) {
-        visibility = computeShadowVisibility(fragWorldPos, normal, lightDir);
+    if (distanceToLight <= 0.001) {
+        return vec3(0.0);
     }
 
-    return visibility * (diffuse + specular);
+    vec3 lightDir = normalize(lightVector);
+
+    float attenuation =
+    1.0 /
+    (
+    1.0 +
+    0.18 * distanceToLight +
+    0.035 * distanceToLight * distanceToLight
+    );
+
+    float diffuseAmount = max(dot(normal, lightDir), 0.0);
+
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float specularAmount = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
+
+    vec3 lightColor = lightColorAndIntensity.rgb;
+    float intensity = lightColorAndIntensity.w;
+
+    float shadowVisibility = computeShadowVisibility(
+        currentShadowMap,
+        currentLightViewProj,
+        fragWorldPos,
+        normal,
+        lightDir
+    );
+
+    vec3 diffuse = diffuseAmount * baseColor;
+    vec3 specular = specularAmount * vec3(0.30);
+
+    return
+    shadowVisibility *
+    attenuation *
+    intensity *
+    lightColor *
+    (diffuse + specular);
 }
 
+
 void main() {
-    vec3 texColor = texture(texSampler, fragUV).rgb;
+    vec4 textureColor = texture(texSampler, fragUV);
 
-    // Alpha above 1.5 means emissive material.
-    // We avoid storing this as a bool because some shader parsers complain.
+    vec3 baseColor = mix(
+        textureColor.rgb,
+        ubo.materialColor.rgb,
+        clamp(ubo.materialColor.a, 0.0, 1.0)
+    );
+
     if (ubo.materialColor.a > 1.5) {
-        vec3 emissiveColor = ubo.materialColor.rgb * 4.0;
-        emissiveColor += texColor * 0.15;
-
-        outColor = vec4(emissiveColor, 1.0);
+        outColor = vec4(ubo.materialColor.rgb, 1.0);
         return;
     }
 
     vec3 N = normalize(fragNormal);
     vec3 V = normalize(gubo.eyePos.xyz - fragWorldPos);
 
-    float tintStrength = clamp(ubo.materialColor.a, 0.0, 1.0);
-    vec3 baseColor = mix(texColor, ubo.materialColor.rgb, tintStrength);
+    vec3 ambient = 0.015 * baseColor;
 
-    // Ambient approximates indirect/background light.
-    // It remains even when all lamps are off, so the scene is still visible.
-    float ambientStrength = 0.04;
-    vec3 ambient = ambientStrength * baseColor;
+    vec3 lighting = ambient;
 
-    vec3 lighting = vec3(0.0);
-
-    // Light 0 uses the existing shadow map.
     lighting += computePointLight(
         gubo.lightPositions[0],
         gubo.lightColors[0],
         gubo.lightEnabled.x,
-        1.0,
+        shadowMap0,
+        gubo.lightViewProj[0],
         baseColor,
         N,
         V
     );
 
-    // Lights 1-3 illuminate without shadows.
     lighting += computePointLight(
         gubo.lightPositions[1],
         gubo.lightColors[1],
         gubo.lightEnabled.y,
-        0.0,
+        shadowMap1,
+        gubo.lightViewProj[1],
         baseColor,
         N,
         V
@@ -191,7 +193,8 @@ void main() {
         gubo.lightPositions[2],
         gubo.lightColors[2],
         gubo.lightEnabled.z,
-        0.0,
+        shadowMap2,
+        gubo.lightViewProj[2],
         baseColor,
         N,
         V
@@ -201,16 +204,15 @@ void main() {
         gubo.lightPositions[3],
         gubo.lightColors[3],
         gubo.lightEnabled.w,
-        0.0,
+        shadowMap3,
+        gubo.lightViewProj[3],
         baseColor,
         N,
         V
     );
 
-    vec3 finalColor = ambient + lighting;
+    lighting = lighting / (lighting + vec3(1.0));
+    lighting = pow(lighting, vec3(1.0 / 2.2));
 
-    // Avoid extreme over-bright values when all four lights are active.
-    finalColor = finalColor / (finalColor + vec3(1.0));
-
-    outColor = vec4(finalColor, 1.0);
+    outColor = vec4(lighting, textureColor.a);
 }
