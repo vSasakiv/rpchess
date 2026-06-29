@@ -2106,7 +2106,7 @@ void finishPlayerMovement() {
         float z =
             (static_cast<float>(row) - (GRID_ROWS - 1) * 0.5f) * CELL_SIZE;
 
-        return glm::vec3(x, 0.30f, z);
+        return glm::vec3(x, 0.25f, z);
     }
 
 
