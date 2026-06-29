@@ -886,7 +886,7 @@ protected:
     // y = shadow strength
     // z = normal offset
     // w = unused
-    gubo.shadowParams = glm::vec4(0.0045f, 0.95f, 0.018f, 1.0f);
+    gubo.shadowParams = glm::vec4(0.0005f, 0.95f, 0.001f, 1.0f);
 
     UniformBufferObject ubo{};
     ShadowLocalUniformBufferObject slubo{};
