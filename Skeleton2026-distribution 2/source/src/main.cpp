@@ -763,16 +763,21 @@ protected:
             return false;
             }
 
-        // Very important: hidden inactive pieces must not cast shadows.
-        if (isInactiveDynamicItemInstance(instanceId)) {
-            return false;
+        // All possible dynamic enemy pieces must always be present
+        // in the shadow command buffer.
+        //
+        // Do NOT check active/inactive here, because the command buffer
+        // is not rebuilt every time a new enemy spawns.
+        if (canSpawnAsEnemyInstance(instanceId)) {
+            return true;
         }
 
-        // Visible objects that should cast shadows.
+        // Player token.
         if (instanceId == TOKEN_INSTANCE_INDEX) {
             return true;
         }
 
+        // Dice.
         if (instanceId == DIE_1_INSTANCE_INDEX ||
             instanceId == DIE_2_INSTANCE_INDEX) {
             return true;
@@ -780,11 +785,6 @@ protected:
 
         // Fixed obstacles.
         if (instanceId == 3 || instanceId == 4) {
-            return true;
-        }
-
-        // Active enemy pieces.
-        if (isActiveDynamicItemInstance(instanceId)) {
             return true;
         }
 
@@ -2310,8 +2310,14 @@ void finishPlayerMovement() {
 
 
     glm::mat4 hiddenModelMatrix() const {
-        return glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -20.0f, 0.0f)) *
-               glm::scale(glm::mat4(1.0f), glm::vec3(0.01f));
+        return glm::translate(
+                   glm::mat4(1.0f),
+                   glm::vec3(1000.0f, -1000.0f, 1000.0f)
+               ) *
+               glm::scale(
+                   glm::mat4(1.0f),
+                   glm::vec3(0.0001f)
+               );
     }
 
     void updateDynamicBoardItemInstances() {

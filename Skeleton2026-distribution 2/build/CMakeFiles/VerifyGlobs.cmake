@@ -33,7 +33,6 @@ set(OLD_GLOB
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/Shadow.frag"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/ColliderShow.frag"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/Text.frag"
-  "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/toChangeBlinnFromPos.frag"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
@@ -63,7 +62,6 @@ set(OLD_GLOB
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/Shadow.vert"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/ColliderShow.vert"
   "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/framework/Text.vert"
-  "C:/Users/marcu/CLionProjects/rpchess/Skeleton2026-distribution 2/source/shaders/toChangeSimplePos.vert"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
