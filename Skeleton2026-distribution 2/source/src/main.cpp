@@ -155,7 +155,6 @@ protected:
     };
 
     // rgb = color, w = intensity.
-    // Lower intensity than the old single lamp, because now several lights can be active.
     glm::vec4 cornerLightColors[NUM_CORNER_LIGHTS] = {
         glm::vec4(1.0f, 0.90f, 0.72f, 1.35f),
         glm::vec4(1.0f, 0.90f, 0.72f, 0.55f),
@@ -251,14 +250,12 @@ protected:
 
     // Board/token height is around y = 0.38 in this scene.
     // The dice collision uses the center of the die, so the center must be ABOVE the board.
-    // We use a slightly conservative height because the die rotates and its corners need clearance.
     static constexpr float DICE_BOARD_Y = 0.38f;
     static constexpr float DICE_REST_Y = 0.48f;
 
     static constexpr float DICE_GRAVITY = -8.8f;
 
     // Higher bounce factor = the dice keep more energy after impact.
-    // This makes the roll last longer.
     static constexpr float DICE_BOUNCE_FACTOR = 0.58f;
 
     // Higher value means less energy loss when sliding on the board.
@@ -330,6 +327,7 @@ protected:
     // Window setup
     // -------------------------------
 
+    // Sets the initial window configuration used before Vulkan creates the window.
     void setWindowParameters() {
         windowWidth = 1280;
         windowHeight = 720;
@@ -339,7 +337,7 @@ protected:
         Ar = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
     }
 
-
+    // Called when the window is resized.
     void onWindowResize(int w, int h) {
         std::cout << "Window resized to: " << w << " x " << h << "\n";
 
@@ -356,6 +354,7 @@ protected:
     // Vulkan local initialization
     // -------------------------------
 
+    // Defines descriptor layouts, vertex format, render passes, pipelines, scene technique,
     void localInit() {
         // Local descriptor layout:
         // binding 0 = per-object uniform buffer
@@ -380,10 +379,7 @@ protected:
         // NOTE: the 4th field of each binding (linkSize) is used by DescriptorSet::init
         // as an offset into a SHARED imageInfo array across all image-type bindings in
         // this layout. It must be a running offset (0, 1, 2, 3, ...), not 0 for every
-        // binding -- otherwise every sampler binding aliases the same image slot, which
-        // was making all four shadow maps sample the same (last-written) texture while
-        // the per-light view-proj matrices stayed correct. That mismatch is exactly what
-        // produced "correct direction, wrong shadow content" for every light.
+        // binding
         DSLglobal.init(this, {
       {
           0,
@@ -497,7 +493,7 @@ protected:
         // A separate Pipeline object per light is required because Pipeline::create()
         // binds to a specific RenderPass at creation time; reusing one Pipeline object
         // across multiple RenderPass objects left passes 1-3 using pass 0's viewport/
-        // framebuffer state, which is why shadows from lights 2-4 were offset.
+        // framebuffer state,
         for (int i = 0; i < 4; i++) {
             Pshadow[i].init(
                 this,
@@ -520,12 +516,11 @@ protected:
             {&DSLglobal, &DSLlocal}
         );
 
-        // Disabled for now because our custom cube may have mixed winding.
+        // Disabled because our custom cube may have mixed winding.
         P.setCullMode(VK_CULL_MODE_NONE);
         P.setCompareOp(VK_COMPARE_OP_LESS_OR_EQUAL);
-        // Descriptor pool size.
-        // We have several scene objects, so this must be larger than the starter default.
 
+        // Descriptor pool size.
         DPSZs.uniformBlocksInPool = 120;
         DPSZs.texturesInPool = 120;
         DPSZs.setsInPool = 120;
@@ -647,7 +642,8 @@ protected:
             {0.8f, 0.8f, 0.0f, 1.0f}
         );
     }
-
+    // This is where render passes and pipelines become real Vulkan objects,
+    // also where the four shadow maps are  connected to the main
     void pipelinesAndDescriptorSetsInit() {
         for (int i = 0; i < 4; i++) {
             RPshadow[i].create();
@@ -677,6 +673,7 @@ protected:
         txt.pipelinesAndDescriptorSetsInit();
     }
 
+    // Called when pipelines/render passes/descriptors must be recreated, for example during resize.
     void pipelinesAndDescriptorSetsCleanup() {
         for (int i = 0; i < 4; i++) {
             Pshadow[i].cleanup();
@@ -692,6 +689,7 @@ protected:
         SC.pipelinesAndDescriptorSetsCleanup();
         txt.pipelinesAndDescriptorSetsCleanup();
     }
+    // Final shutdown cleanup.
     void localCleanup() {
         DSLlocal.cleanup();
         DSLglobal.cleanup();
@@ -718,6 +716,7 @@ protected:
     // Command buffer
     // -------------------------------
 
+    // Converts the generic void* pointer back to our application object and calls populateCommandBuffer().
     static void populateCommandBufferAccess(
         VkCommandBuffer commandBuffer,
         int currentImage,
@@ -727,6 +726,8 @@ protected:
         app->populateCommandBuffer(commandBuffer, currentImage);
     }
 
+    // Records the full frame rendering order into the command buffer.
+    // First renders four shadow maps, one per light, then renders the final visible scene in pass 4.
     void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
         for (int lightIndex = 0; lightIndex < 4; lightIndex++) {
             RPshadow[lightIndex].begin(commandBuffer, currentImage);
@@ -741,6 +742,7 @@ protected:
 
         RP.end(commandBuffer);
     }
+
     bool isLampInstance(int instanceId) const {
         return
             instanceId == LAMP_1_POST_INSTANCE_INDEX ||
@@ -765,9 +767,6 @@ protected:
 
         // All possible dynamic enemy pieces must always be present
         // in the shadow command buffer.
-        //
-        // Do NOT check active/inactive here, because the command buffer
-        // is not rebuilt every time a new enemy spawns.
         if (canSpawnAsEnemyInstance(instanceId)) {
             return true;
         }
@@ -791,6 +790,7 @@ protected:
         return false;
     }
 
+    // Draws all shadow-casting objects for one shadow pass.
     void populateShadowCommandBuffer(
         VkCommandBuffer commandBuffer,
         int currentImage,
@@ -840,6 +840,9 @@ protected:
     // Per-frame update
     // -------------------------------
 
+
+    // Updates game logic, model matrices, light matrices, global lighting data,
+    // shadow-pass uniforms, main-pass uniforms, and HUD text before the frame is rendered.
     void updateUniformBuffer(uint32_t currentImage) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -1014,7 +1017,7 @@ protected:
         die1Sleeping = false;
         die2Sleeping = false;
 
-        // rest of your existing dice code...
+
 
         // Start positions, slightly above the board.
         die1Position = glm::vec3(
@@ -1031,7 +1034,6 @@ protected:
 
         // Initial velocities.
         // x/z move them across the board, y throws them upward.
-        // Smaller horizontal velocities because the dice now roll inside a tray.
         die1Velocity = glm::vec3(
             randomFloat(-0.9f, 0.9f),
             randomFloat(3.5f, 4.4f),
@@ -1077,7 +1079,7 @@ protected:
     }
 
 
-
+    // Advances the dice simulation while the dice are rolling.
     void updateDice(float deltaT) {
         if (!diceRolling) {
             return;
@@ -1138,8 +1140,9 @@ protected:
             finishDiceRoll();
         }
     }
-
-void updateSingleDiePhysics(
+    // Applies gravity, velocity integration, angular rotation, air drag, tray-wall bounces,
+    // floor collision, friction, damping, value changes on bounce, and sleep detection.
+    void updateSingleDiePhysics(
     glm::vec3& position,
     glm::vec3& velocity,
     glm::vec3& rotation,
@@ -1189,10 +1192,6 @@ void updateSingleDiePhysics(
         velocity.z = -std::abs(velocity.z) * DICE_BOUNCE_FACTOR;
     }
 
-    // Collision with the board plane.
-   // Collision with the board plane.
-// We clamp the CENTER of the die to DICE_REST_Y.
-// Since DICE_REST_Y is above the board surface, the visible die stays above the board.
         // Collision with the board plane.
         // We clamp the CENTER of the die to DICE_REST_Y.
         // Since DICE_REST_Y is above the board surface, the visible die stays above the board.
@@ -1246,7 +1245,7 @@ void updateSingleDiePhysics(
     void resolveDiceDiceCollision(float deltaT) {
     glm::vec3 difference = die2Position - die1Position;
 
-    // We mostly care about collision in the XZ plane because the dice are on the board.
+    // We  care about collision in the XZ plane because the dice are on the board.
     glm::vec2 differenceXZ = glm::vec2(difference.x, difference.z);
 
     float distance = glm::length(differenceXZ);
@@ -1267,7 +1266,7 @@ void updateSingleDiePhysics(
     float penetration = minimumDistance - distance;
 
     // Push each die half the penetration distance away from the other.
-    // This removes visual overlap immediately.
+    // This removes visual overlap.
     glm::vec2 correction = normalXZ * (penetration * 0.5f);
 
     die1Position.x -= correction.x;
@@ -1328,7 +1327,7 @@ void updateSingleDiePhysics(
     die1Sleeping = false;
     die2Sleeping = false;
 }
-
+    // Forces one die into a stable final state.
     void forceStopDie(
         glm::vec3& position,
         glm::vec3& velocity,
@@ -1598,7 +1597,6 @@ void updateSingleDiePhysics(
     }
 
     bool isFixedBlocked(int row, int col) const {
-        // The two original obstacles from scene.json:
         // blocked_cell_a at row 2, col 3
         // blocked_cell_b at row 4, col 5
         return (row == 2 && col == 3) ||
@@ -1719,7 +1717,7 @@ void spawnRandomBoardItem() {
     return 0;
 }
 
-
+// Checks whether a straight or diagonal line between two cells is unobstructed.
 bool lineClearBetween(int fromRow, int fromCol, int toRow, int toCol) const {
     int dRow = signInt(toRow - fromRow);
     int dCol = signInt(toCol - fromCol);
@@ -1805,6 +1803,7 @@ bool anyBoardItemAttacksPlayer(BoardItem* attackingItem = nullptr) {
 
     return false;
 }
+
 void hideInactiveDynamicItems() {
     if (SC.TI == nullptr) {
         return;
@@ -1943,6 +1942,8 @@ void finishPlayerMovement() {
             finishAttackAnimation();
         }
     }
+
+    // Main per-frame gameplay and camera update.
     float GameLogic() {
         const float FOVy = glm::radians(45.0f);
         const float nearPlane = 0.1f;
@@ -2095,10 +2096,6 @@ void finishPlayerMovement() {
     // Grid/token logic
     // -------------------------------
 
-    // -------------------------------
-    // Grid/token logic
-    // -------------------------------
-
     glm::vec3 gridToWorld(int row, int col) const {
         float x =
             (static_cast<float>(col) - (GRID_COLS - 1) * 0.5f) * CELL_SIZE;
@@ -2162,6 +2159,8 @@ void finishPlayerMovement() {
     // -------------------------------
     // Model matrices
     // -------------------------------
+
+    // Converts the token's grid position into world position and applies the token scale.
     glm::mat4 tokenModelMatrix() const {
         glm::vec3 pos = gridToWorld(tokenRow, tokenCol);
 
@@ -2221,6 +2220,7 @@ void finishPlayerMovement() {
         }
     }
 
+    // Applies translation from physics position, rotations from dice spin, and final scale.
     glm::mat4 diceModelMatrix(
         const glm::vec3& position,
         const glm::vec3& rotation,
@@ -2249,6 +2249,7 @@ void finishPlayerMovement() {
         return M;
     }
 
+    // Places it on its board cell and, if it is attacking, adds lunge/jump/scale animation.
     glm::mat4 boardItemModelMatrix(const BoardItem& item) const {
         glm::vec3 basePos = gridToWorld(item.row, item.col);
         glm::vec3 finalPos = basePos;
@@ -2287,16 +2288,6 @@ void finishPlayerMovement() {
 
         float scale = 0.13f;
 
-        if (
-            gamePhase == GamePhase::Attacking &&
-            hasCurrentAttacker &&
-            item.instanceId == currentAttacker.instanceId
-        ) {
-            float t = attackAnimationTimer / ATTACK_ANIMATION_DURATION;
-            t = std::clamp(t, 0.0f, 1.0f);
-
-            scale = 0.13f + std::sin(t * 3.14159265f) * 0.035f;
-        }
 
         M = glm::scale(M, glm::vec3(scale, scale, scale));
 
@@ -2308,7 +2299,7 @@ void finishPlayerMovement() {
                instanceId <= LAST_DICE_PIP_INDEX;
     }
 
-
+    // Used to keep inactive preloaded objects from appearing or casting visible shadows.
     glm::mat4 hiddenModelMatrix() const {
         return glm::translate(
                    glm::mat4(1.0f),
@@ -2320,6 +2311,7 @@ void finishPlayerMovement() {
                );
     }
 
+    // Active items are placed on the board; inactive items are hidden.
     void updateDynamicBoardItemInstances() {
         if (SC.TI == nullptr) {
             return;
@@ -2344,14 +2336,11 @@ void finishPlayerMovement() {
         }
     }
 
+    // This acts like a camera from the light's position and is used to render/check that light's shadow map.
     glm::mat4 computeLightViewProj(int lightIndex) const {
         glm::vec3 lightPos = glm::vec3(cornerLightPositions[lightIndex]);
 
         // All lamps aim at the same fixed point at board center.
-        // (A per-light "partial target" was tried here and made things worse —
-        // it produced a different, inconsistent frustum tilt per light instead
-        // of a uniform one, which is why shadows looked offset in a way that
-        // didn't match any single light's real direction.)
         glm::vec3 target = glm::vec3(0.0f, 0.35f, 0.0f);
 
         glm::mat4 lightView = glm::lookAt(
@@ -2383,6 +2372,9 @@ void finishPlayerMovement() {
         // Dark non-emissive bulb when off.
         return glm::vec4(0.05f, 0.04f, 0.03f, 0.75f);
     }
+
+    // Chooses the per-object material/tint sent to Arena.frag.
+    // Used for enemy colors, attacker highlight, dice/table/tray colors, and emissive lamp bulbs.
     glm::vec4 objectMaterialColor(int instanceId) const {
         if (isDicePipInstance(instanceId)) {
             return glm::vec4(0.01f, 0.01f, 0.01f, 1.0f);
@@ -2463,7 +2455,7 @@ void finishPlayerMovement() {
         }
     }
 
-
+    // Applies the current dice model matrices to the loaded scene instances.
     void updateDiceInstances(float deltaT) {
         if (SC.TI == nullptr) {
             return;
@@ -2496,6 +2488,7 @@ void finishPlayerMovement() {
         }
     }
 
+    // Applies the current player-token model matrix to the loaded scene instance.
     void updateTokenInstance() {
         if (SC.TI == nullptr) {
             return;
