@@ -1,5 +1,5 @@
 #version 450
-
+// Set 0, binding 0: global data shared by the whole scene.
 layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
     mat4 lightViewProj[4];
     vec4 lightPositions[4];
@@ -9,26 +9,31 @@ layout(set = 0, binding = 0) uniform GlobalUniformBufferObject {
     vec4 shadowParams;
 } gubo;
 
+// Set 0, bindings 1-4: shadow maps from the four shadow passes.
 layout(set = 0, binding = 1) uniform sampler2D shadowMap0;
 layout(set = 0, binding = 2) uniform sampler2D shadowMap1;
 layout(set = 0, binding = 3) uniform sampler2D shadowMap2;
 layout(set = 0, binding = 4) uniform sampler2D shadowMap3;
 
+// Set 1, binding 0: per-object uniforms.
 layout(set = 1, binding = 0) uniform UniformBufferObject {
     mat4 mvpMat;
     mat4 mMat;
     vec4 materialColor;
 } ubo;
 
+// Set 1, binding 1: normal object texture.
 layout(set = 1, binding = 1) uniform sampler2D texSampler;
 
+// Interpolated input from Arena.vert.
 layout(location = 0) in vec3 fragWorldPos;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec2 fragUV;
 
+// Final output color for this fragment.
 layout(location = 0) out vec4 outColor;
 
-
+// Checks whether the current fragment is visible from one specific light.
 float computeShadowVisibility(
     sampler2D currentShadowMap,
     mat4 currentLightViewProj,
@@ -86,7 +91,7 @@ float computeShadowVisibility(
     return mix(1.0, 1.0 - shadowStrength, shadow);
 }
 
-
+// Computes the contribution of one point light.
 vec3 computePointLight(
     vec4 lightPosition,
     vec4 lightColorAndIntensity,
@@ -120,6 +125,9 @@ vec3 computePointLight(
 
     float diffuseAmount = max(dot(normal, lightDir), 0.0);
 
+
+    // Blinn-Phong specular highlight:
+    // The halfway vector lies between the light direction and view direction.
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float specularAmount = pow(max(dot(normal, halfwayDir), 0.0), 32.0);
 
