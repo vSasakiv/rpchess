@@ -77,7 +77,6 @@ protected:
 
     TextMaker txt;
 
-
     // -------------------------------
     // Camera state
     // -------------------------------
@@ -334,7 +333,7 @@ protected:
     void setWindowParameters() {
         windowWidth = 1280;
         windowHeight = 720;
-        windowTitle = "Tabletop Dice RPG Arena";
+        windowTitle = "CarlsenQuest";
         windowResizable = true;
 
         Ar = static_cast<float>(windowWidth) / static_cast<float>(windowHeight);
@@ -376,7 +375,7 @@ protected:
         0,
         1
     }
-});
+    });
 
         // NOTE: the 4th field of each binding (linkSize) is used by DescriptorSet::init
         // as an offset into a SHARED imageInfo array across all image-type bindings in
@@ -421,7 +420,7 @@ protected:
           3,
           1
       }
-  });
+      });
 
         DSLshadowGlobal.init(this, {
             {
@@ -535,7 +534,6 @@ protected:
         // These must match scene.json.
         VDRs.resize(1);
         VDRs[0].init("VDposNormUV", &VD);
-
 
         TextureDefs shadowMapTexture0{};
         shadowMapTexture0.fromInstance = false;
@@ -2476,8 +2474,6 @@ void finishPlayerMovement() {
             diceModelMatrix(die2Position, die2Rotation, die2Value, true);
     }
 
-
-
     void updateDicePipInstances() {
         if (SC.TI == nullptr) {
             return;
@@ -2507,6 +2503,7 @@ void finishPlayerMovement() {
     }
 
 };
+
 int main() {
     TabletopDiceRPGArena app;
 
